@@ -847,23 +847,29 @@ function Hero() {
                   inputMode="numeric"
                   {...register("superBuiltUpArea")}
                   onChange={(e) => {
-                    handleNumericInput(e, "superBuiltUpArea");
+                    // Only clear error if there's actual input
+                    if (e.target.value.trim().length > 0) {
+                      handleNumericInput(e, "superBuiltUpArea");
+                    } else {
+                      setValue("superBuiltUpArea", "", {
+                        shouldValidate: false,
+                      });
+                    }
+                  }}
+                  // Remove onFocus handler to keep error state
+                  onBlur={() => {
                     setTouchedFields((prev) => ({
                       ...prev,
                       superBuiltUpArea: true,
                     }));
+                    trigger("superBuiltUpArea");
                   }}
-                  onBlur={() =>
-                    setTouchedFields((prev) => ({
-                      ...prev,
-                      superBuiltUpArea: true,
-                    }))
-                  }
                   placeholder="Enter area in square feet"
                 />
-                {errors.superBuiltUpArea && touchedFields.superBuiltUpArea && (
+                {errors.superBuiltUpArea && (
                   <p className="text-xs text-red-500 mt-1">
-                    {errors.superBuiltUpArea.message}
+                    Super Builtup area sqft is mandatory. Please complete the
+                    required field.
                   </p>
                 )}
               </div>
@@ -884,23 +890,27 @@ function Hero() {
                   inputMode="numeric"
                   {...register("carpetArea")}
                   onChange={(e) => {
-                    handleNumericInput(e, "carpetArea");
+                    // Only clear error if there's actual input
+                    if (e.target.value.trim().length > 0) {
+                      handleNumericInput(e, "carpetArea");
+                    } else {
+                      setValue("carpetArea", "", { shouldValidate: false });
+                    }
+                  }}
+                  // Remove onFocus handler to keep error state
+                  onBlur={() => {
                     setTouchedFields((prev) => ({
                       ...prev,
                       carpetArea: true,
                     }));
+                    trigger("carpetArea");
                   }}
-                  onBlur={() =>
-                    setTouchedFields((prev) => ({
-                      ...prev,
-                      carpetArea: true,
-                    }))
-                  }
                   placeholder="Enter carpet area in square feet"
                 />
-                {errors.carpetArea && touchedFields.carpetArea && (
+                {errors.carpetArea && (
                   <p className="text-xs text-red-500 mt-1">
-                    {errors.carpetArea.message}
+                    Carpet Area sqft is mandatory. Please complete the required
+                    field.
                   </p>
                 )}
               </div>
@@ -1187,13 +1197,28 @@ function Hero() {
                     type="text"
                     inputMode="numeric"
                     {...register("price")}
-                    onChange={(e) => handleNumericInput(e, "price")}
+                    onChange={(e) => {
+                      // Only clear error if there's actual input
+                      if (e.target.value.trim().length > 0) {
+                        handleNumericInput(e, "price");
+                      } else {
+                        setValue("price", "", { shouldValidate: false });
+                      }
+                    }}
+                    // Remove onFocus handler to keep error state
+                    onBlur={() => {
+                      setTouchedFields((prev) => ({
+                        ...prev,
+                        price: true,
+                      }));
+                      trigger("price");
+                    }}
                     placeholder="Enter price"
                   />
                 </div>
-                {errors.price && touchedFields.price && (
+                {errors.price && (
                   <p className="text-xs text-red-500 mt-1">
-                    {errors.price.message}
+                    Price is mandatory. Please complete the required field.
                   </p>
                 )}
               </div>
@@ -1211,64 +1236,68 @@ function Hero() {
                 type="file"
                 onChange={handleFileChange}
               />
-              <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-4 w-fit gap-2">
-                <div
-                  onClick={() => {
-                    handlePhotoClick(0);
-                    setTouchedFields((prev) => ({ ...prev, photos: true }));
-                  }}
-                  className={`border-2 w-20 sm:w-24 md:w-[103px] h-20 sm:h-24 md:h-[103px] flex items-center justify-center cursor-pointer ${
-                    errors.photos && touchedFields.photos && photos.length === 0
-                      ? "border-red-500"
-                      : "border-black"
-                  }`}
-                >
-                  <div className="flex flex-col items-center">
-                    <img
-                      alt="Add Photo"
-                      className="w-9 h-9"
-                      src="data:image/svg+xml,%3csvg%20xmlns='http://www.w3.org/2000/svg'%20width='36px'%20height='36px'%20viewBox='0%200%201024%201024'%20data-aut-id='icon'%20class=''%20fill-rule='evenodd'%3e%3cpath%20class='rui-jB92v'%20d='M861.099%20667.008v78.080h77.568v77.653h-77.568v77.141h-77.568v-77.184h-77.611v-77.611h77.611v-78.080h77.568zM617.515%20124.16l38.784%20116.437h165.973l38.827%2038.827v271.659l-38.827%2038.357-38.741-38.4v-232.832h-183.125l-38.784-116.48h-176.853l-38.784%20116.48h-183.083v426.923h426.667l38.784%2038.357-38.784%2039.253h-465.493l-38.741-38.869v-504.491l38.784-38.827h165.973l38.827-116.437h288.597zM473.216%20318.208c106.837%200%20193.92%2086.955%20193.92%20194.048%200%20106.923-87.040%20194.091-193.92%20194.091s-193.963-87.168-193.963-194.091c0-107.093%2087.083-194.048%20193.963-194.048zM473.216%20395.861c-64.213%200-116.352%2052.181-116.352%20116.395%200%2064.256%2052.139%20116.437%20116.352%20116.437%2064.171%200%20116.352-52.181%20116.352-116.437%200-64.213-52.181-116.437-116.352-116.437z'/%3e%3c/svg%3e"
-                    />
-                    <span className="text-xs mt-1">Add Photo</span>
-                  </div>
-                </div>
-
-                {photos.map((photo, index) => (
+              <div className="w-full md:w-[440px]">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   <div
-                    key={index}
-                    className="border-2 w-20 sm:w-24 md:w-[103px] h-20 sm:h-24 md:h-[103px] border-gray-400 relative"
+                    onClick={() => {
+                      handlePhotoClick(0);
+                      setTouchedFields((prev) => ({ ...prev, photos: true }));
+                    }}
+                    className={`border-2 aspect-square flex items-center justify-center cursor-pointer ${
+                      errors.photos &&
+                      touchedFields.photos &&
+                      photos.length === 0
+                        ? "border-red-500"
+                        : "border-black"
+                    }`}
                   >
-                    <img
-                      src={URL.createObjectURL(photo)}
-                      alt={`Photo ${index + 1}`}
-                      className="w-full h-full object-cover"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => handleRemovePhoto(index)}
-                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center"
-                    >
-                      ×
-                    </button>
+                    <div className="flex flex-col items-center">
+                      <img
+                        alt="Add Photo"
+                        className="w-9 h-9"
+                        src="data:image/svg+xml,%3csvg%20xmlns='http://www.w3.org/2000/svg'%20width='36px'%20height='36px'%20viewBox='0%200%201024%201024'%20data-aut-id='icon'%20class=''%20fill-rule='evenodd'%3e%3cpath%20class='rui-jB92v'%20d='M861.099%20667.008v78.080h77.568v77.653h-77.568v77.141h-77.568v-77.184h-77.611v-77.611h77.611v-78.080h77.568zM617.515%20124.16l38.784%20116.437h165.973l38.827%2038.827v271.659l-38.827%2038.357-38.741-38.4v-232.832h-183.125l-38.784-116.48h-176.853l-38.784%20116.48h-183.083v426.923h426.667l38.784%2038.357-38.784%2039.253h-465.493l-38.741-38.869v-504.491l38.784-38.827h165.973l38.827-116.437h288.597zM473.216%20318.208c106.837%200%20193.92%2086.955%20193.92%20194.048%200%20106.923-87.040%20194.091-193.92%20194.091s-193.963-87.168-193.963-194.091c0-107.093%2087.083-194.048%20193.963-194.048zM473.216%20395.861c-64.213%200-116.352%2052.181-116.352%20116.395%200%2064.256%2052.139%20116.437%20116.352%20116.437%2064.171%200%20116.352-52.181%20116.352-116.437%200-64.213-52.181-116.437-116.352-116.437z'/%3e%3c/svg%3e"
+                      />
+                      <span className="text-xs mt-1">Add Photo</span>
+                    </div>
                   </div>
-                ))}
 
-                {photos.length < 20 &&
-                  Array(Math.min(3, 20 - photos.length))
-                    .fill()
-                    .map((_, idx) => (
-                      <div
-                        key={`placeholder-${idx}`}
-                        onClick={() => handlePhotoClick(photos.length + idx)}
-                        className="border-2 w-20 sm:w-24 md:w-[103px] h-20 sm:h-24 md:h-[103px] border-gray-400 flex items-center justify-center cursor-pointer"
+                  {photos.map((photo, index) => (
+                    <div
+                      key={index}
+                      className="border-2 border-gray-400 relative aspect-square"
+                    >
+                      <img
+                        src={URL.createObjectURL(photo)}
+                        alt={`Photo ${index + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleRemovePhoto(index)}
+                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center"
                       >
-                        <img
-                          className="text-gray-100 w-9 h-9"
-                          alt="img-logo"
-                          src="data:image/svg+xml,%3csvg%20xmlns='http://www.w3.org/2000/svg'%20width='40px'%20height='40px'%20viewBox='0%200%201024%201024'%20data-aut-id='icon'%20class=''%20fill-rule='evenodd'%3e%3cpath%20class='rui-jB92v'%20fill='%238D9094'%20d='M861.099%20667.008v78.080h77.568v77.653h-77.568v77.141h-77.568v-77.184h-77.611v-77.611h77.611v-78.080h77.568zM617.515%20124.16l38.784%20116.437h165.973l38.827%2038.827v271.659l-38.827%2038.357-38.741-38.4v-232.832h-183.125l-38.784-116.48h-176.853l-38.784%20116.48h-183.083v426.923h426.667l38.784%2038.357-38.784%2039.253h-465.493l-38.741-38.869v-504.491l38.784-38.827h165.973l38.827-116.437h288.597zM473.216%20318.208c106.837%200%20193.92%2086.955%20193.92%20194.048%200%20106.923-87.040%20194.091-193.92%20194.091s-193.963-87.168-193.963-194.091c0-107.093%2087.083-194.048%20193.963-194.048zM473.216%20395.861c-64.213%200-116.352%2052.181-116.352%20116.395%200%2064.256%2052.139%20116.437%20116.352%20116.437%2064.171%200%20116.352-52.181%20116.352-116.437%200-64.213-52.181-116.437-116.352-116.437z'/%3e%3c/svg%3e"
-                        />
-                      </div>
-                    ))}
+                        ×
+                      </button>
+                    </div>
+                  ))}
+
+                  {photos.length < 20 &&
+                    Array(Math.min(19, 20 - photos.length))
+                      .fill()
+                      .map((_, idx) => (
+                        <div
+                          key={`placeholder-${idx}`}
+                          onClick={() => handlePhotoClick(photos.length + idx)}
+                          className="border-2 border-gray-400 flex items-center justify-center cursor-pointer aspect-square"
+                        >
+                          <img
+                            className="text-gray-100 w-9 h-9"
+                            alt="img-logo"
+                            src="data:image/svg+xml,%3csvg%20xmlns='http://www.w3.org/2000/svg'%20width='40px'%20height='40px'%20viewBox='0%200%201024%201024'%20data-aut-id='icon'%20class=''%20fill-rule='evenodd'%3e%3cpath%20class='rui-jB92v'%20fill='%238D9094'%20d='M861.099%20667.008v78.080h77.568v77.653h-77.568v77.141h-77.568v-77.184h-77.611v-77.611h77.611v-78.080h77.568zM617.515%20124.16l38.784%20116.437h165.973l38.827%2038.827v271.659l-38.827%2038.357-38.741-38.4v-232.832h-183.125l-38.784-116.48h-176.853l-38.784%20116.48h-183.083v426.923h426.667l38.784%2038.357-38.784%2039.253h-465.493l-38.741-38.869v-504.491l38.784-38.827h165.973l38.827-116.437h288.597zM473.216%20318.208c106.837%200%20193.92%2086.955%20193.92%20194.048%200%20106.923-87.040%20194.091-193.92%20194.091s-193.963-87.168-193.963-194.091c0-107.093%2087.083-194.048%20193.963-194.048zM473.216%20395.861c-64.213%200-116.352%2052.181-116.352%20116.395%200%2064.256%2052.139%20116.437%20116.352%20116.437%2064.171%200%20116.352-52.181%20116.352-116.437%200-64.213-52.181-116.437-116.352-116.437z'/%3e%3c/svg%3e"
+                          />
+                        </div>
+                      ))}
+                </div>
               </div>
               {photoError && (
                 <p className="text-xs text-red-500 mt-2">{photoError}</p>
