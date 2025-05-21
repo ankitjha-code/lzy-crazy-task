@@ -8,42 +8,86 @@ import "../App.css";
 
 // Form schema
 const formSchema = z.object({
-  propertyType: z.string().optional(),
+  propertyType: z.string().min(1, {
+    message: "Property type is mandatory. Please select one option.",
+  }),
   bhk: z.string().optional(),
   bathrooms: z.string().optional(),
   furnishing: z.string().optional(),
   projectStatus: z.string().optional(),
   listedBy: z.string().optional(),
-  superBuiltUpArea: z.string().min(1, {
-    message:
-      "Super Builtup area sqft is mandatory. Please complete the required field.",
-  }),
-  carpetArea: z.string().min(1, {
-    message: "Carpet Area is mandatory. Please complete the required field.",
-  }),
-  maintenance: z.string().optional(),
-  totalFloors: z.string().optional(),
-  floorNo: z.string().optional(),
+  superBuiltUpArea: z
+    .string()
+    .min(1, {
+      message:
+        "Super Builtup area sqft is mandatory. Please complete the required field.",
+    })
+    .regex(/^\d+$/, { message: "Please enter a valid numerical value." }),
+  carpetArea: z
+    .string()
+    .min(1, {
+      message: "Carpet Area is mandatory. Please complete the required field.",
+    })
+    .regex(/^\d+$/, { message: "Please enter a valid numerical value." }),
+  maintenance: z
+    .string()
+    .optional()
+    .refine((val) => !val || /^\d+$/.test(val), {
+      message: "Maintenance charge must be a numerical value.",
+    }),
+  totalFloors: z
+    .string()
+    .optional()
+    .refine((val) => !val || /^\d+$/.test(val), {
+      message: "Total floors must be a numerical value.",
+    }),
+  floorNo: z
+    .string()
+    .optional()
+    .refine((val) => !val || /^\d+$/.test(val), {
+      message: "Floor number must be a numerical value.",
+    }),
   carParking: z.string().optional(),
   facing: z.string().optional(),
-  projectName: z.string().optional(),
-  adTitle: z.string().min(10, {
-    message:
-      "A minimum length of 10 characters is required. Please edit the field.",
-  }),
-  description: z.string().min(10, {
-    message:
-      "A minimum length of 10 characters is required. Please edit the field.",
-  }),
-  price: z.string().min(1, {
-    message: "Price is mandatory. Please complete the required field.",
-  }),
+  projectName: z
+    .string()
+    .max(70, { message: "Project name cannot exceed 70 characters." })
+    .optional(),
+  adTitle: z
+    .string()
+    .min(10, {
+      message:
+        "A minimum length of 10 characters is required. Please edit the field.",
+    })
+    .max(70, { message: "Ad title cannot exceed 70 characters." }),
+  description: z
+    .string()
+    .min(10, {
+      message:
+        "A minimum length of 10 characters is required. Please edit the field.",
+    })
+    .max(4096, { message: "Description cannot exceed 4096 characters." }),
+  price: z
+    .string()
+    .min(1, {
+      message: "Price is mandatory. Please complete the required field.",
+    })
+    .regex(/^\d+$/, { message: "Price must be a numerical value." }),
   state: z.string().min(1, {
     message: "State is mandatory. Please complete the required field.",
   }),
-  mobileNumber: z.string().min(10, {
-    message:
-      "Valid mobile number is required. Please complete the required field.",
+  mobileNumber: z
+    .string()
+    .min(10, {
+      message:
+        "Valid mobile number is required. Please complete the required field.",
+    })
+    .max(10, { message: "Mobile number should be 10 digits." })
+    .regex(/^[0-9]+$/, {
+      message: "Mobile number should contain only digits.",
+    }),
+  photos: z.array(z.instanceof(File)).min(1, {
+    message: "At least one photo is required. Please upload a photo.",
   }),
 });
 
@@ -88,7 +132,7 @@ const Textarea = React.forwardRef(({ className, ...props }, ref) => {
 
 const Button = ({ children, className, variant, ...props }) => {
   const baseClasses =
-    "inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors";
+    "inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors cursor-pointer";
   const variantClasses =
     variant === "default"
       ? "bg-blue-200 border"
@@ -219,11 +263,17 @@ function Hero() {
 
   // State to track which field is currently focused
   const [focusedField, setFocusedField] = useState(null);
+  const [photos, setPhotos] = useState([]);
+  const [photoError, setPhotoError] = useState("");
+  const fileInputRef = React.useRef(null);
 
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    setValue,
+    watch,
+    reset, // Add reset function from react-hook-form
+    formState: { errors, isValid, isDirty },
   } = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -246,12 +296,97 @@ function Hero() {
       price: "",
       state: "",
       mobileNumber: "",
+      photos: [],
     },
-    mode: "onBlur",
+    mode: "onChange", // Changed from onBlur to onChange for more responsive validation
   });
+
+  // Watch for all form values to validate the form
+  const formValues = watch();
+
+  // Check if all required fields are filled
+  const isFormValid = React.useMemo(() => {
+    const requiredFields = [
+      "propertyType",
+      "superBuiltUpArea",
+      "carpetArea",
+      "adTitle",
+      "description",
+      "price",
+      "state",
+      "mobileNumber",
+      "photos",
+    ];
+    return requiredFields.every((field) => {
+      // Special handling for photos array
+      if (field === "photos") {
+        return photos.length > 0 && !errors[field];
+      }
+      return !!formValues[field] && !errors[field];
+    });
+  }, [formValues, errors, photos]);
+
+  // Check for character limits
+  const isAdTitleValid = adTitleCount <= 70;
+  const isDescriptionValid = descriptionCount <= 4096;
+  const isProjectNameValid = projectNameCount <= 70;
 
   function onSubmit(values) {
     console.log(values);
+
+    // Show success message
+    alert("Your ad has been posted successfully!");
+
+    // Reset all form fields
+    reset({
+      propertyType: "",
+      bhk: "",
+      bathrooms: "",
+      furnishing: "",
+      projectStatus: "",
+      listedBy: "",
+      superBuiltUpArea: "",
+      carpetArea: "",
+      maintenance: "",
+      totalFloors: "",
+      floorNo: "",
+      carParking: "",
+      facing: "",
+      projectName: "",
+      adTitle: "",
+      description: "",
+      price: "",
+      state: "",
+      mobileNumber: "",
+      photos: [],
+    });
+
+    // Reset all state variables
+    setSelectedPropertyType(null);
+    setSelectedBHK(null);
+    setSelectedBathrooms(null);
+    setSelectedFurnishing(null);
+    setSelectedProjectStatus(null);
+    setSelectedListedBy(null);
+    setSelectedCarParking(null);
+
+    // Reset character counters
+    setProjectNameCount(0);
+    setAdTitleCount(0);
+    setDescriptionCount(0);
+
+    // Reset photos
+    setPhotos([]);
+    setPhotoError("");
+
+    // Reset focused field
+    setFocusedField(null);
+
+    // Scroll to top of the form for better UX
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
   }
 
   // Helper function to handle focus and blur events
@@ -274,6 +409,93 @@ function Hero() {
         register(name).onBlur(e);
       },
     };
+  };
+
+  // Modify button click handlers to update form values
+  const handlePropertyTypeClick = (value) => {
+    const newValue = selectedPropertyType === value ? "" : value;
+    setSelectedPropertyType(newValue);
+    setValue("propertyType", newValue, { shouldValidate: true });
+  };
+
+  const handleBHKClick = (value) => {
+    const newValue = selectedBHK === value ? "" : value;
+    setSelectedBHK(newValue);
+    setValue("bhk", newValue, { shouldValidate: true });
+  };
+
+  const handleBathroomsClick = (value) => {
+    const newValue = selectedBathrooms === value ? "" : value;
+    setSelectedBathrooms(newValue);
+    setValue("bathrooms", newValue, { shouldValidate: true });
+  };
+
+  const handleFurnishingClick = (value) => {
+    const newValue = selectedFurnishing === value ? "" : value;
+    setSelectedFurnishing(newValue);
+    setValue("furnishing", newValue, { shouldValidate: true });
+  };
+
+  const handleProjectStatusClick = (value) => {
+    const newValue = selectedProjectStatus === value ? "" : value;
+    setSelectedProjectStatus(newValue);
+    setValue("projectStatus", newValue, { shouldValidate: true });
+  };
+
+  const handleListedByClick = (value) => {
+    const newValue = selectedListedBy === value ? "" : value;
+    setSelectedListedBy(newValue);
+    setValue("listedBy", newValue, { shouldValidate: true });
+  };
+
+  const handleCarParkingClick = (value) => {
+    const newValue = selectedCarParking === value ? "" : value;
+    setSelectedCarParking(newValue);
+    setValue("carParking", newValue, { shouldValidate: true });
+  };
+
+  // Handle photo click
+  const handlePhotoClick = (index) => {
+    if (index === 0 || index === photos.length) {
+      // If clicking the first box or the next empty box after photos
+      fileInputRef.current.click();
+    }
+  };
+
+  // Handle file change
+  const handleFileChange = (e) => {
+    const selectedFiles = Array.from(e.target.files);
+
+    // Validate file types
+    const validFiles = selectedFiles.filter((file) => {
+      const validTypes = ["image/jpeg", "image/png", "image/jpg", "image/webp"];
+      if (!validTypes.includes(file.type)) {
+        setPhotoError("Only JPEG, PNG, and WEBP images are allowed");
+        return false;
+      }
+      // Check file size (5MB max)
+      if (file.size > 5 * 1024 * 1024) {
+        setPhotoError("Image size should not exceed 5MB");
+        return false;
+      }
+      return true;
+    });
+
+    if (validFiles.length > 0) {
+      setPhotoError("");
+      // Limit to maximum 20 photos
+      const newPhotos = [...photos, ...validFiles].slice(0, 20);
+      setPhotos(newPhotos);
+      setValue("photos", newPhotos, { shouldValidate: true });
+    }
+  };
+
+  // Remove photo
+  const handleRemovePhoto = (index) => {
+    const newPhotos = [...photos];
+    newPhotos.splice(index, 1);
+    setPhotos(newPhotos);
+    setValue("photos", newPhotos, { shouldValidate: true });
   };
 
   return (
@@ -316,14 +538,9 @@ function Hero() {
                         : "outline"
                     }
                     className="h-8 text-sm justify-start px-3 py-1.5 font-normal"
-                    onClick={() => {
-                      setSelectedPropertyType(
-                        selectedPropertyType === "Flats / Apartments"
-                          ? null
-                          : "Flats / Apartments"
-                      );
-                      // Update form value
-                    }}
+                    onClick={() =>
+                      handlePropertyTypeClick("Flats / Apartments")
+                    }
                   >
                     Flats / Apartments
                   </Button>
@@ -335,14 +552,9 @@ function Hero() {
                         : "outline"
                     }
                     className="h-8 text-sm justify-start px-3 py-1.5 font-normal"
-                    onClick={() => {
-                      setSelectedPropertyType(
-                        selectedPropertyType === "Independent / Builder Floors"
-                          ? null
-                          : "Independent / Builder Floors"
-                      );
-                      // Update form value
-                    }}
+                    onClick={() =>
+                      handlePropertyTypeClick("Independent / Builder Floors")
+                    }
                   >
                     Independent / Builder Floors
                   </Button>
@@ -354,14 +566,7 @@ function Hero() {
                         : "outline"
                     }
                     className="h-8 text-sm justify-start px-3 py-1.5 font-normal"
-                    onClick={() => {
-                      setSelectedPropertyType(
-                        selectedPropertyType === "Farm House"
-                          ? null
-                          : "Farm House"
-                      );
-                      // Update form value
-                    }}
+                    onClick={() => handlePropertyTypeClick("Farm House")}
                   >
                     Farm House
                   </Button>
@@ -373,18 +578,14 @@ function Hero() {
                         : "outline"
                     }
                     className="h-8 text-sm justify-start px-3 py-1.5 font-normal"
-                    onClick={() => {
-                      setSelectedPropertyType(
-                        selectedPropertyType === "House & Villa"
-                          ? null
-                          : "House & Villa"
-                      );
-                      // Update form value
-                    }}
+                    onClick={() => handlePropertyTypeClick("House & Villa")}
                   >
                     House & Villa
                   </Button>
                 </div>
+                {errors.propertyType && (
+                  <FormMessage>{errors.propertyType.message}</FormMessage>
+                )}
               </FormItem>
               {/* BHK */}
               <FormItem className="">
@@ -396,10 +597,7 @@ function Hero() {
                       type="button"
                       variant={selectedBHK === bhk ? "default" : "outline"}
                       className="h-8 w-16 p-0 min-w-[64px] text-sm font-normal"
-                      onClick={() => {
-                        setSelectedBHK(selectedBHK === bhk ? null : bhk);
-                        // Update form value
-                      }}
+                      onClick={() => handleBHKClick(bhk)}
                     >
                       {bhk}
                     </Button>
@@ -418,12 +616,7 @@ function Hero() {
                         selectedBathrooms === bathroom ? "default" : "outline"
                       }
                       className="h-8 w-16 p-0 min-w-[64px] text-sm font-normal"
-                      onClick={() => {
-                        setSelectedBathrooms(
-                          selectedBathrooms === bathroom ? null : bathroom
-                        );
-                        // Update form value
-                      }}
+                      onClick={() => handleBathroomsClick(bathroom)}
                     >
                       {bathroom}
                     </Button>
@@ -440,12 +633,7 @@ function Hero() {
                       selectedFurnishing === "Furnished" ? "default" : "outline"
                     }
                     className="h-8 text-sm px-3 py-1.5 font-normal"
-                    onClick={() => {
-                      setSelectedFurnishing(
-                        selectedFurnishing === "Furnished" ? null : "Furnished"
-                      );
-                      // Update form value
-                    }}
+                    onClick={() => handleFurnishingClick("Furnished")}
                   >
                     Furnished
                   </Button>
@@ -457,14 +645,7 @@ function Hero() {
                         : "outline"
                     }
                     className="h-8 text-sm px-3 py-1.5 font-normal"
-                    onClick={() => {
-                      setSelectedFurnishing(
-                        selectedFurnishing === "Semi Furnished"
-                          ? null
-                          : "Semi Furnished"
-                      );
-                      // Update form value
-                    }}
+                    onClick={() => handleFurnishingClick("Semi Furnished")}
                   >
                     Semi Furnished
                   </Button>
@@ -476,14 +657,7 @@ function Hero() {
                         : "outline"
                     }
                     className="h-8 text-sm px-3 py-1.5 font-normal"
-                    onClick={() => {
-                      setSelectedFurnishing(
-                        selectedFurnishing === "Unfurnished"
-                          ? null
-                          : "Unfurnished"
-                      );
-                      // Update form value
-                    }}
+                    onClick={() => handleFurnishingClick("Unfurnished")}
                   >
                     Unfurnished
                   </Button>
@@ -501,14 +675,7 @@ function Hero() {
                         : "outline"
                     }
                     className="h-8 text-sm px-3 py-1.5 font-normal"
-                    onClick={() => {
-                      setSelectedProjectStatus(
-                        selectedProjectStatus === "New Launch"
-                          ? null
-                          : "New Launch"
-                      );
-                      // Update form value
-                    }}
+                    onClick={() => handleProjectStatusClick("New Launch")}
                   >
                     New Launch
                   </Button>
@@ -520,14 +687,7 @@ function Hero() {
                         : "outline"
                     }
                     className="h-8 text-sm px-3 py-1.5 font-normal"
-                    onClick={() => {
-                      setSelectedProjectStatus(
-                        selectedProjectStatus === "Ready to Move"
-                          ? null
-                          : "Ready to Move"
-                      );
-                      // Update form value
-                    }}
+                    onClick={() => handleProjectStatusClick("Ready to Move")}
                   >
                     Ready to Move
                   </Button>
@@ -539,14 +699,9 @@ function Hero() {
                         : "outline"
                     }
                     className="h-8 text-sm px-3 py-1.5 font-normal"
-                    onClick={() => {
-                      setSelectedProjectStatus(
-                        selectedProjectStatus === "Under Construction"
-                          ? null
-                          : "Under Construction"
-                      );
-                      // Update form value
-                    }}
+                    onClick={() =>
+                      handleProjectStatusClick("Under Construction")
+                    }
                   >
                     Under Construction
                   </Button>
@@ -562,12 +717,7 @@ function Hero() {
                       selectedListedBy === "Builder" ? "default" : "outline"
                     }
                     className="h-8 text-sm px-3 py-1.5 font-normal"
-                    onClick={() => {
-                      setSelectedListedBy(
-                        selectedListedBy === "Builder" ? null : "Builder"
-                      );
-                      // Update form value
-                    }}
+                    onClick={() => handleListedByClick("Builder")}
                   >
                     Builder
                   </Button>
@@ -577,12 +727,7 @@ function Hero() {
                       selectedListedBy === "Dealer" ? "default" : "outline"
                     }
                     className="h-8 text-sm px-3 py-1.5 font-normal"
-                    onClick={() => {
-                      setSelectedListedBy(
-                        selectedListedBy === "Dealer" ? null : "Dealer"
-                      );
-                      // Update form value
-                    }}
+                    onClick={() => handleListedByClick("Dealer")}
                   >
                     Dealer
                   </Button>
@@ -592,12 +737,7 @@ function Hero() {
                       selectedListedBy === "Owner" ? "default" : "outline"
                     }
                     className="h-8 text-sm px-3 py-1.5 font-normal"
-                    onClick={() => {
-                      setSelectedListedBy(
-                        selectedListedBy === "Owner" ? null : "Owner"
-                      );
-                      // Update form value
-                    }}
+                    onClick={() => handleListedByClick("Owner")}
                   >
                     Owner
                   </Button>
@@ -709,12 +849,7 @@ function Hero() {
                         selectedCarParking === parking ? "default" : "outline"
                       }
                       className="h-8 w-16 p-0 min-w-[64px] text-sm font-normal"
-                      onClick={() => {
-                        setSelectedCarParking(
-                          selectedCarParking === parking ? null : parking
-                        );
-                        // Update form value
-                      }}
+                      onClick={() => handleCarParkingClick(parking)}
                     >
                       {parking}
                     </Button>
@@ -730,7 +865,7 @@ function Hero() {
                 </FormLabel>
                 <Select
                   onValueChange={(value) => {
-                    // Update form value
+                    setValue("facing", value, { shouldValidate: true });
                   }}
                   onOpenChange={(open) => {
                     if (open) handleFocus("facing");
@@ -767,16 +902,35 @@ function Hero() {
                 <FormControl>
                   <Input
                     {...registerField("projectName")}
-                    className="h-10 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-2 focus-visible:border-purple-800"
+                    className={`h-10 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-2 ${
+                      !isProjectNameValid
+                        ? "border-red-500 focus-visible:border-red-500"
+                        : "focus-visible:border-purple-800"
+                    }`}
                     onChange={(e) => {
-                      setProjectNameCount(e.target.value.length);
+                      const value = e.target.value;
+                      if (value.length <= 70) {
+                        setProjectNameCount(value.length);
+                        setValue("projectName", value, {
+                          shouldValidate: true,
+                        });
+                      }
                     }}
+                    maxLength={70}
                   />
                 </FormControl>
-                <div className="text-right text-xs text-gray-500">
+                <div
+                  className={`text-right text-xs ${
+                    projectNameCount > 70 ? "text-red-500" : "text-gray-500"
+                  }`}
+                >
                   {projectNameCount} / 70
                 </div>
+                {errors.projectName && (
+                  <FormMessage>{errors.projectName.message}</FormMessage>
+                )}
               </FormItem>
+
               {/* Ad title */}
               <FormItem>
                 <FormLabel
@@ -790,13 +944,18 @@ function Hero() {
                   <Input
                     {...registerField("adTitle")}
                     className={`h-10 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-2 ${
-                      errors.adTitle
+                      errors.adTitle || !isAdTitleValid
                         ? "border-red-500 focus-visible:border-red-500"
                         : "focus-visible:border-purple-800"
                     }`}
                     onChange={(e) => {
-                      setAdTitleCount(e.target.value.length);
+                      const value = e.target.value;
+                      if (value.length <= 70) {
+                        setAdTitleCount(value.length);
+                        setValue("adTitle", value, { shouldValidate: true });
+                      }
                     }}
+                    maxLength={70}
                   />
                 </FormControl>
                 {errors.adTitle && (
@@ -806,10 +965,15 @@ function Hero() {
                   Mention the key features of your item (e.g. brand, model, age,
                   type)
                 </div>
-                <div className="text-right text-xs text-gray-500">
+                <div
+                  className={`text-right text-xs ${
+                    adTitleCount > 70 ? "text-red-500" : "text-gray-500"
+                  }`}
+                >
                   {adTitleCount} / 70
                 </div>
               </FormItem>
+
               {/* Description */}
               <FormItem>
                 <FormLabel
@@ -823,13 +987,20 @@ function Hero() {
                   <Textarea
                     {...registerField("description")}
                     className={`min-h-[100px] focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-2 ${
-                      errors.description
+                      errors.description || !isDescriptionValid
                         ? "border-red-500 focus-visible:border-red-500"
                         : "focus-visible:border-purple-800"
                     }`}
                     onChange={(e) => {
-                      setDescriptionCount(e.target.value.length);
+                      const value = e.target.value;
+                      if (value.length <= 4096) {
+                        setDescriptionCount(value.length);
+                        setValue("description", value, {
+                          shouldValidate: true,
+                        });
+                      }
                     }}
+                    maxLength={4096}
                   />
                 </FormControl>
                 {errors.description && (
@@ -838,7 +1009,11 @@ function Hero() {
                 <div className="text-xs text-gray-500 mt-1">
                   Include condition, features and reason for selling
                 </div>
-                <div className="text-right text-xs text-gray-500">
+                <div
+                  className={`text-right text-xs ${
+                    descriptionCount > 4096 ? "text-red-500" : "text-gray-500"
+                  }`}
+                >
                   {descriptionCount} / 4096
                 </div>
               </FormItem>
@@ -881,45 +1056,105 @@ function Hero() {
           <div className="border-b border-gray-300">
             <div className="w-3/5 p-4">
               <h2 className="font-bold text-xl mb-4">UPLOAD UP TO 20 PHOTOS</h2>
+
+              {/* Hidden file input */}
+              <input
+                type="file"
+                ref={fileInputRef}
+                accept="image/jpeg,image/png,image/jpg,image/webp"
+                multiple
+                className="hidden"
+                onChange={handleFileChange}
+              />
+
               <div className="grid grid-cols-4 gap-2">
-                {Array.from({ length: 20 }).map((_, index) => (
+                {/* Render uploaded photos */}
+                {photos.map((photo, index) => (
                   <div
-                    key={index}
-                    className={`border ${
-                      index === 0 ? "border-black" : "border-gray-300"
-                    } rounded aspect-square flex flex-col items-center justify-center ${
-                      index === 0 ? "text-black" : "text-gray-400"
-                    }`}
+                    key={`photo-${index}`}
+                    className="border border-gray-300 rounded aspect-square relative overflow-hidden group"
                   >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-6 w-6"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
+                    <img
+                      src={URL.createObjectURL(photo)}
+                      alt={`Preview ${index}`}
+                      className="h-full w-full object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleRemovePhoto(index)}
+                      className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
-                      />
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
-                      />
-                    </svg>
-                    {index === 0 && (
-                      <span className="text-xs mt-1">Add Photo</span>
-                    )}
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-4 w-4"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                    </button>
                   </div>
                 ))}
+
+                {/* Empty boxes to complete the grid */}
+                {Array.from({ length: Math.max(1, 20 - photos.length) }).map(
+                  (_, index) => (
+                    <div
+                      key={`empty-${index}`}
+                      onClick={() => handlePhotoClick(photos.length + index)}
+                      className={`border ${
+                        index === 0 ? "border-black" : "border-gray-300"
+                      } rounded aspect-square flex flex-col items-center justify-center ${
+                        index === 0 ? "text-black" : "text-gray-400"
+                      } cursor-pointer hover:bg-gray-50`}
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-6 w-6"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
+                        />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
+                        />
+                      </svg>
+                      {index === 0 && (
+                        <span className="text-xs mt-1">Add Photo</span>
+                      )}
+                    </div>
+                  )
+                )}
               </div>
-              <div className="text-xs text-red-500 mt-2">
-                This field is mandatory
-              </div>
+
+              {photoError ? (
+                <div className="text-xs text-red-500 mt-2">{photoError}</div>
+              ) : photos.length === 0 ? (
+                <div className="text-xs text-red-500 mt-2">
+                  This field is mandatory
+                </div>
+              ) : (
+                <div className="text-xs text-gray-500 mt-2">
+                  {photos.length} of 20 photos added
+                </div>
+              )}
+
+              {errors.photos && (
+                <FormMessage>{errors.photos.message}</FormMessage>
+              )}
             </div>
           </div>
           {/* CONFIRM YOUR LOCATION */}
@@ -945,7 +1180,7 @@ function Hero() {
                 </FormLabel>
                 <Select
                   onValueChange={(value) => {
-                    // Update form value
+                    setValue("state", value, { shouldValidate: true });
                   }}
                   onOpenChange={(open) => {
                     if (open) handleFocus("state");
@@ -972,9 +1207,7 @@ function Hero() {
                 {errors.state && (
                   <FormMessage>{errors.state.message}</FormMessage>
                 )}
-                <div className="text-xs text-red-500 mt-2">
-                  This field is mandatory
-                </div>
+                {/* Remove duplicate error message */}
               </FormItem>
             </div>
           </div>
@@ -1039,7 +1272,12 @@ function Hero() {
           <div className="w-3/5 h-10 p-8">
             <Button
               type="submit"
-              className="px-6 py-4 bg-blue-600 hover:bg-blue-700 text-white"
+              className={`px-6 py-4 ${
+                isFormValid
+                  ? "bg-blue-600 hover:bg-blue-700 text-white"
+                  : "bg-gray-300 text-gray-500 cursor-not-allowed"
+              }`}
+              disabled={!isFormValid}
             >
               Post now
             </Button>
