@@ -50,12 +50,12 @@ const formSchema = z.object({
 // Form components
 const FormLabel = ({ children, className }) => {
   return (
-    <label className={`text-xs font-semibold ${className}`}>{children}</label>
+    <label className={`text-sm font-normal ${className}`}>{children}</label>
   );
 };
 
 const FormItem = ({ children }) => {
-  return <div className="mb-4">{children}</div>;
+  return <div className="mb-10">{children}</div>;
 };
 
 const FormControl = ({ children }) => {
@@ -69,7 +69,7 @@ const FormMessage = ({ children }) => {
 const Input = React.forwardRef(({ className, ...props }, ref) => {
   return (
     <input
-      className={`block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none ${className}`}
+      className={`block w-full px-3 py-2 border border-gray-400 rounded-md focus:outline-none ${className}`}
       ref={ref}
       {...props}
     />
@@ -79,7 +79,7 @@ const Input = React.forwardRef(({ className, ...props }, ref) => {
 const Textarea = React.forwardRef(({ className, ...props }, ref) => {
   return (
     <textarea
-      className={`block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none ${className}`}
+      className={`block w-full px-3 py-2 border border-gray-400 rounded-md focus:outline-none ${className}`}
       ref={ref}
       {...props}
     />
@@ -148,7 +148,7 @@ const SelectTrigger = ({ children, onClick, className, value }) => {
     <button
       type="button"
       onClick={onClick}
-      className={`flex items-center justify-between w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-white ${className}`}
+      className={`flex items-center justify-between w-full px-3 py-2 border border-gray-300 rounded-md bg-white ${className}`}
     >
       {React.Children.map(children, (child) => {
         if (child.type === SelectValue) {
@@ -180,7 +180,7 @@ const SelectValue = ({ value, placeholder, children }) => {
 
 const SelectContent = ({ children, onSelect }) => {
   return (
-    <div className="absolute z-10 bottom-full w-full bg-white shadow-lg rounded-md py-1 border border-gray-200">
+    <div className="absolute z-10 mt-1 b-0 w-full bg-white shadow-lg rounded-md py-1 border border-gray-200">
       {React.Children.map(children, (child) => {
         if (child.type === SelectItem) {
           return React.cloneElement(child, {
