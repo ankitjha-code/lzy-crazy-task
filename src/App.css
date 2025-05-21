@@ -1,0 +1,25 @@
+/* Custom styles for form error messages */
+.form-error {
+  color: #ff0000;
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+}
+
+/* Custom focus styles for inputs */
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  border-color: #553c9a !important; /* dark purple */
+  border-width: 2px !important;
+  outline: none !important;
+  box-shadow: none !important;
+  transition: border-color 0.2s ease-in-out, border-width 0.2s ease-in-out;
+}
+
+/* Reset focus styles for invalid inputs */
+input.border-red-500:focus-visible,
+textarea.border-red-500:focus-visible,
+select.border-red-500:focus-visible {
+  border-color: #f56565 !important; /* red */
+  border-width: 2px !important;
+}
