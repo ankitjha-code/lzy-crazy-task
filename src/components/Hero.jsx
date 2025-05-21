@@ -1290,7 +1290,7 @@ function Hero() {
           </div>
 
           {/* Submit Button */}
-          <div className="w-full sm:w-4/5 md:w-3/5 p-4 sm:p-4">
+          <div className="w-full sm:w-4/5 md:w-3/5 p-6 h-10">
             <Button
               type="submit"
               className={`w-full sm:w-auto px-4 sm:px-6 py-3 sm:py-4 text-center ${
