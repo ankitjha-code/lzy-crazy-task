@@ -499,23 +499,27 @@ function Hero() {
   };
 
   return (
-    <div className="min-h-screen max-w-4xl mx-auto">
-      <div className="p-4 flex items-center">
-        <h1 className="text-center flex-1 font-bold text-2xl">POST YOUR AD</h1>
+    <div className="min-h-screen max-w-4xl mx-auto px-4 sm:px-6">
+      <div className="p-2 sm:p-4 flex items-center">
+        <h1 className="text-center flex-1 font-bold text-xl sm:text-2xl">
+          POST YOUR AD
+        </h1>
       </div>
-      <div className="bg-white pb-16 border-1 border-gray-300 rounded-md">
+      <div className="bg-white pb-6 sm:pb-16 border-1 border-gray-300 rounded-md">
         <form onSubmit={handleSubmit(onSubmit)}>
           {/* SELECTED CATEGORY */}
           <div className="border-b border-gray-300">
-            <div className="w-3/5 p-4">
-              <h2 className="font-bold text-xl mb-6">SELECTED CATEGORY</h2>
-              <div className="text-sm mb-3 text-gray-500">
+            <div className="w-full sm:w-4/5 md:w-3/5 p-3 sm:p-4">
+              <h2 className="font-bold text-lg sm:text-xl mb-3 sm:mb-6">
+                SELECTED CATEGORY
+              </h2>
+              <div className="text-xs sm:text-sm mb-3 text-gray-500">
                 <span>Properties</span>
                 <span className="mx-1">/</span>
                 <span>For Sale: Houses & Apartments</span>
                 <button
                   type="button"
-                  className="ml-3 text-[#004896] font-bold underline underline-offset-4 decoration-2 hover:no-underline cursor-pointer"
+                  className="ml-2 sm:ml-3 text-[#004896] font-bold underline underline-offset-4 decoration-2 hover:no-underline cursor-pointer"
                 >
                   Change
                 </button>
@@ -524,12 +528,14 @@ function Hero() {
           </div>
           {/* INCLUDE SOME DETAILS */}
           <div className="border-b border-gray-300">
-            <div className="w-3/5 p-8">
-              <h2 className="font-bold text-xl mb-4">INCLUDE SOME DETAILS</h2>
+            <div className="w-full sm:w-4/5 md:w-3/5 p-4 sm:p-8">
+              <h2 className="font-bold text-lg sm:text-xl mb-3 sm:mb-4">
+                INCLUDE SOME DETAILS
+              </h2>
               {/* Property Type */}
               <FormItem>
                 <FormLabel>Type *</FormLabel>
-                <div className="grid grid-cols-2 gap-2 mt-1">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-1">
                   <Button
                     type="button"
                     variant={
@@ -590,7 +596,7 @@ function Hero() {
               {/* BHK */}
               <FormItem className="">
                 <FormLabel>BHK</FormLabel>
-                <div className="flex gap-2 mt-1">
+                <div className="flex flex-wrap gap-2 mt-1">
                   {["1", "2", "3", "4", "4+"].map((bhk) => (
                     <Button
                       key={bhk}
@@ -607,7 +613,7 @@ function Hero() {
               {/* Bathrooms */}
               <FormItem>
                 <FormLabel>Bathrooms</FormLabel>
-                <div className="flex gap-2 mt-1">
+                <div className="flex flex-wrap gap-2 mt-1">
                   {["1", "2", "3", "4", "4+"].map((bathroom) => (
                     <Button
                       key={bathroom}
@@ -626,7 +632,7 @@ function Hero() {
               {/* Furnishing */}
               <FormItem>
                 <FormLabel>Furnishing</FormLabel>
-                <div className="grid grid-cols-3 gap-2 mt-1">
+                <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 gap-2 mt-1">
                   <Button
                     type="button"
                     variant={
@@ -666,7 +672,7 @@ function Hero() {
               {/* Project Status */}
               <FormItem>
                 <FormLabel>Project Status</FormLabel>
-                <div className="grid grid-cols-3 gap-2 mt-1">
+                <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 gap-2 mt-1">
                   <Button
                     type="button"
                     variant={
@@ -710,7 +716,7 @@ function Hero() {
               {/* Listed By */}
               <FormItem>
                 <FormLabel>Listed by</FormLabel>
-                <div className="grid grid-cols-3 gap-2 mt-1">
+                <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 gap-2 mt-1">
                   <Button
                     type="button"
                     variant={
@@ -1021,8 +1027,10 @@ function Hero() {
           </div>
           {/* SET A PRICE */}
           <div className="border-b border-gray-300">
-            <div className="w-3/5 p-4">
-              <h2 className="font-bold text-xl mb-4">SET A PRICE</h2>
+            <div className="w-full sm:w-4/5 md:w-3/5 p-3 sm:p-4">
+              <h2 className="font-bold text-lg sm:text-xl mb-3 sm:mb-4">
+                SET A PRICE
+              </h2>
               <FormItem>
                 <FormLabel
                   className={focusedField === "price" ? "text-purple-800" : ""}
@@ -1054,8 +1062,10 @@ function Hero() {
           </div>
           {/* UPLOAD UP TO 20 PHOTOS */}
           <div className="border-b border-gray-300">
-            <div className="w-3/5 p-4">
-              <h2 className="font-bold text-xl mb-4">UPLOAD UP TO 20 PHOTOS</h2>
+            <div className="w-full sm:w-4/5 md:w-3/5 p-3 sm:p-4">
+              <h2 className="font-bold text-lg sm:text-xl mb-3 sm:mb-4">
+                UPLOAD UP TO 20 PHOTOS
+              </h2>
 
               {/* Hidden file input */}
               <input
@@ -1067,7 +1077,7 @@ function Hero() {
                 onChange={handleFileChange}
               />
 
-              <div className="grid grid-cols-4 gap-2">
+              <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 gap-2">
                 {/* Render uploaded photos */}
                 {photos.map((photo, index) => (
                   <div
@@ -1159,16 +1169,21 @@ function Hero() {
           </div>
           {/* CONFIRM YOUR LOCATION */}
           <div className="border-b border-gray-300">
-            <div className="w-3/5 p-4">
-              <h2 className="font-bold text-xl mb-4">CONFIRM YOUR LOCATION</h2>
+            <div className="w-full sm:w-4/5 md:w-3/5 p-3 sm:p-4">
+              <h2 className="font-bold text-lg sm:text-xl mb-3 sm:mb-4">
+                CONFIRM YOUR LOCATION
+              </h2>
               <div className="flex border-b border-gray-300 mb-4">
                 <button
                   type="button"
-                  className="py-2 px-4 border-b-2 border-blue-500 font-medium text-sm"
+                  className="py-1 sm:py-2 px-2 sm:px-4 border-b-2 border-blue-500 font-medium text-xs sm:text-sm"
                 >
                   LIST
                 </button>
-                <button type="button" className="py-2 px-4 text-sm">
+                <button
+                  type="button"
+                  className="py-1 sm:py-2 px-2 sm:px-4 text-xs sm:text-sm"
+                >
                   CURRENT LOCATION
                 </button>
               </div>
@@ -1213,20 +1228,24 @@ function Hero() {
           </div>
           {/* REVIEW YOUR DETAILS */}
           <div className="border-b-2 border-gray-300">
-            <div className="w-3/5 p-4">
-              <h2 className="font-bold text-xl mb-4">REVIEW YOUR DETAILS</h2>
+            <div className="w-full sm:w-4/5 md:w-3/5 p-3 sm:p-4">
+              <h2 className="font-bold text-lg sm:text-xl mb-3 sm:mb-4">
+                REVIEW YOUR DETAILS
+              </h2>
 
               {/* Profile section with improved alignment */}
-              <div className="flex items-center mb-4">
-                <div className="w-24 h-24 rounded-full bg-blue-500 overflow-hidden mr-3">
+              <div className="flex flex-col sm:flex-row items-center sm:items-start mb-4">
+                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-blue-500 overflow-hidden mb-3 sm:mb-0 sm:mr-3">
                   <img
                     src="https://media2.dev.to/dynamic/image/width=800%2Cheight=%2Cfit=scale-down%2Cgravity=auto%2Cformat=auto/https%3A%2F%2Fwww.gravatar.com%2Favatar%2F2c7d99fe281ecd3bcd65ab915bac6dd5%3Fs%3D250"
                     alt="Profile"
                     className="w-full h-full object-cover"
                   />
                 </div>
-                <div className="flex flex-col justify-center">
-                  <div className="font-medium text-xl">Ankit Kumar Jha</div>
+                <div className="flex flex-col justify-center text-center sm:text-left">
+                  <div className="font-medium text-lg sm:text-xl">
+                    Ankit Kumar Jha
+                  </div>
                   <div className="text-xs text-gray-500">11 / 70</div>
                 </div>
               </div>
@@ -1248,8 +1267,8 @@ function Hero() {
                 >
                   Mobile Phone Number *
                 </FormLabel>
-                <div className="flex w-3/5">
-                  <div className="bg-gray-100 border border-gray-300 rounded-l px-3 flex items-center text-sm">
+                <div className="flex w-full sm:w-3/5">
+                  <div className="bg-gray-100 border border-gray-300 rounded-l px-2 sm:px-3 flex items-center text-xs sm:text-sm">
                     +91
                   </div>
                   <FormControl>
@@ -1269,10 +1288,12 @@ function Hero() {
               </FormItem>
             </div>
           </div>
-          <div className="w-3/5 h-10 p-8">
+
+          {/* Submit Button */}
+          <div className="w-full sm:w-4/5 md:w-3/5 p-4 sm:p-8">
             <Button
               type="submit"
-              className={`px-6 py-4 ${
+              className={`w-full sm:w-auto px-4 sm:px-6 py-3 sm:py-4 text-center ${
                 isFormValid
                   ? "bg-blue-600 hover:bg-blue-700 text-white"
                   : "bg-gray-300 text-gray-500 cursor-not-allowed"
