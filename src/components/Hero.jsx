@@ -632,13 +632,13 @@ function Hero() {
               {/* Furnishing */}
               <FormItem>
                 <FormLabel>Furnishing</FormLabel>
-                <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 gap-2 mt-1">
+                <div className="grid grid-cols-1 xs:grid-cols-3 sm:grid-cols-3 gap-2 mt-1">
                   <Button
                     type="button"
                     variant={
                       selectedFurnishing === "Furnished" ? "default" : "outline"
                     }
-                    className="h-8 text-sm px-1.5 py-1.5 font-normal"
+                    className="h-8 text-sm px-1 py-1.5 font-normal"
                     onClick={() => handleFurnishingClick("Furnished")}
                   >
                     Furnished
@@ -650,7 +650,7 @@ function Hero() {
                         ? "default"
                         : "outline"
                     }
-                    className="h-8 text-sm px-1.5 py-1.5 font-normal"
+                    className="h-8 text-sm px-1 py-1.5 font-normal"
                     onClick={() => handleFurnishingClick("Semi Furnished")}
                   >
                     Semi Furnished
@@ -662,7 +662,7 @@ function Hero() {
                         ? "default"
                         : "outline"
                     }
-                    className="h-8 text-sm px-1.5 py-1.5 font-normal"
+                    className="h-8 text-sm px-1 py-1.5 font-normal"
                     onClick={() => handleFurnishingClick("Unfurnished")}
                   >
                     Unfurnished
@@ -672,7 +672,7 @@ function Hero() {
               {/* Project Status */}
               <FormItem>
                 <FormLabel>Project Status</FormLabel>
-                <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 gap-2 mt-1">
+                <div className="grid grid-cols-1 xs:grid-cols-3 sm:grid-cols-3 gap-2 mt-1">
                   <Button
                     type="button"
                     variant={
@@ -680,7 +680,7 @@ function Hero() {
                         ? "default"
                         : "outline"
                     }
-                    className="h-8 text-sm px-1.5 py-1.5 font-normal"
+                    className="h-8 text-sm px-1 py-1.5 font-normal"
                     onClick={() => handleProjectStatusClick("New Launch")}
                   >
                     New Launch
@@ -692,7 +692,7 @@ function Hero() {
                         ? "default"
                         : "outline"
                     }
-                    className="h-8 text-sm px-1.5 py-1.5 font-normal"
+                    className="h-8 text-sm px-1 py-1.5 font-normal"
                     onClick={() => handleProjectStatusClick("Ready to Move")}
                   >
                     Ready to Move
@@ -704,7 +704,7 @@ function Hero() {
                         ? "default"
                         : "outline"
                     }
-                    className="h-8 text-sm px-1.5 py-1.5 font-normal"
+                    className="h-8 text-sm px-1 py-1.5 font-normal"
                     onClick={() =>
                       handleProjectStatusClick("Under Construction")
                     }
@@ -716,13 +716,13 @@ function Hero() {
               {/* Listed By */}
               <FormItem>
                 <FormLabel>Listed by</FormLabel>
-                <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 gap-2 mt-1">
+                <div className="grid grid-cols-1 xs:grid-cols-3 sm:grid-cols-3 gap-2 mt-1">
                   <Button
                     type="button"
                     variant={
                       selectedListedBy === "Builder" ? "default" : "outline"
                     }
-                    className="h-8 text-sm px-1.5 py-1.5 font-normal"
+                    className="h-8 text-sm px-1 py-1.5 font-normal"
                     onClick={() => handleListedByClick("Builder")}
                   >
                     Builder
@@ -732,7 +732,7 @@ function Hero() {
                     variant={
                       selectedListedBy === "Dealer" ? "default" : "outline"
                     }
-                    className="h-8 text-sm px-1.5 py-1.5 font-normal"
+                    className="h-8 text-sm px-1 py-1.5 font-normal"
                     onClick={() => handleListedByClick("Dealer")}
                   >
                     Dealer
@@ -742,7 +742,7 @@ function Hero() {
                     variant={
                       selectedListedBy === "Owner" ? "default" : "outline"
                     }
-                    className="h-8 text-sm px-1.5 py-1.5 font-normal"
+                    className="h-8 text-sm px-1 py-1.5 font-normal"
                     onClick={() => handleListedByClick("Owner")}
                   >
                     Owner
