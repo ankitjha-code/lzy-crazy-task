@@ -1081,19 +1081,28 @@ function Hero() {
                   maxLength="70"
                   type="text"
                   {...registerCountField("adTitle", setAdTitleCount)}
-                  placeholder={
-                    errors.adTitle && touchedFields.adTitle
-                      ? errors.adTitle.message
-                      : "Mention key features (e.g. brand, model, age, type)"
-                  }
+                  placeholder="Mention key features (e.g. brand, model, age, type)"
                 />
-                <div className="flex flex-col sm:flex-row justify-between text-xs text-gray-500 mt-2">
-                  <span className="mb-1 sm:mb-0">
-                    {errors.adTitle && touchedFields.adTitle
-                      ? ""
-                      : "Mention the key features of your item (e.g. brand, model, age, type)"}
+                <div className="flex flex-col sm:flex-row justify-between text-xs mt-2">
+                  {errors.adTitle && touchedFields.adTitle ? (
+                    <span className="text-red-500">
+                      {errors.adTitle.message}
+                    </span>
+                  ) : (
+                    <span className="text-gray-500">
+                      Mention the key features of your item (e.g. brand, model,
+                      age, type)
+                    </span>
+                  )}
+                  <span
+                    className={`${
+                      adTitleCount < 10 && touchedFields.adTitle
+                        ? "text-red-500"
+                        : "text-gray-500"
+                    }`}
+                  >
+                    {adTitleCount} / 70
                   </span>
-                  <span>{adTitleCount} / 70</span>
                 </div>
               </div>
 
@@ -1115,19 +1124,27 @@ function Hero() {
                   }`}
                   {...registerCountField("description", setDescriptionCount)}
                   maxLength="4096"
-                  placeholder={
-                    errors.description && touchedFields.description
-                      ? errors.description.message
-                      : "Include condition, features and reason for selling"
-                  }
+                  placeholder="Include condition, features and reason for selling"
                 ></textarea>
-                <div className="flex justify-between text-xs text-gray-500 mt-2">
-                  <span>
-                    {errors.description && touchedFields.description
-                      ? ""
-                      : "Include condition, features and reason for selling"}
+                <div className="flex justify-between text-xs mt-2">
+                  {errors.description && touchedFields.description ? (
+                    <span className="text-red-500">
+                      {errors.description.message}
+                    </span>
+                  ) : (
+                    <span className="text-gray-500">
+                      Include condition, features and reason for selling
+                    </span>
+                  )}
+                  <span
+                    className={`${
+                      descriptionCount < 10 && touchedFields.description
+                        ? "text-red-500"
+                        : "text-gray-500"
+                    }`}
+                  >
+                    {descriptionCount} / 4096
                   </span>
-                  <span>{descriptionCount} / 4096</span>
                 </div>
               </div>
 
