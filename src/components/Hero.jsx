@@ -509,7 +509,7 @@ function Hero() {
         <form onSubmit={handleSubmit(onSubmit)}>
           {/* SELECTED CATEGORY */}
           <div className="border-b border-gray-300">
-            <div className="w-full sm:w-4/5 md:w-3/5 p-3 sm:p-4">
+            <div className="w-full sm:w-4/5 md:w-4/5 p-3 sm:p-4">
               <h2 className="font-bold text-lg sm:text-xl mb-3 sm:mb-6">
                 SELECTED CATEGORY
               </h2>
@@ -528,7 +528,7 @@ function Hero() {
           </div>
           {/* INCLUDE SOME DETAILS */}
           <div className="border-b border-gray-300">
-            <div className="w-full sm:w-4/5 md:w-3/5 p-4 sm:p-8">
+            <div className="w-full sm:w-4/5 md:w-4/5 p-4 sm:p-8">
               <h2 className="font-bold text-lg sm:text-xl mb-3 sm:mb-4">
                 INCLUDE SOME DETAILS
               </h2>
@@ -1027,7 +1027,7 @@ function Hero() {
           </div>
           {/* SET A PRICE */}
           <div className="border-b border-gray-300">
-            <div className="w-full sm:w-4/5 md:w-3/5 p-3 sm:p-4">
+            <div className="w-full sm:w-4/5 md:w-4/5 p-3 sm:p-4">
               <h2 className="font-bold text-lg sm:text-xl mb-3 sm:mb-4">
                 SET A PRICE
               </h2>
@@ -1062,7 +1062,7 @@ function Hero() {
           </div>
           {/* UPLOAD UP TO 20 PHOTOS */}
           <div className="border-b border-gray-300">
-            <div className="w-full sm:w-4/5 md:w-3/5 p-3 sm:p-4">
+            <div className="w-full sm:w-4/5 md:w-4/5 p-3 sm:p-4">
               <h2 className="font-bold text-lg sm:text-xl mb-3 sm:mb-4">
                 UPLOAD UP TO 20 PHOTOS
               </h2>
@@ -1169,7 +1169,7 @@ function Hero() {
           </div>
           {/* CONFIRM YOUR LOCATION */}
           <div className="border-b border-gray-300">
-            <div className="w-full sm:w-4/5 md:w-3/5 p-3 sm:p-4">
+            <div className="w-full sm:w-4/5 md:w-4/5 p-3 sm:p-4">
               <h2 className="font-bold text-lg sm:text-xl mb-3 sm:mb-4">
                 CONFIRM YOUR LOCATION
               </h2>
@@ -1228,7 +1228,7 @@ function Hero() {
           </div>
           {/* REVIEW YOUR DETAILS */}
           <div className="border-b-2 border-gray-300">
-            <div className="w-full sm:w-4/5 md:w-3/5 p-3 sm:p-4">
+            <div className="w-full sm:w-4/5 md:w-4/5 p-3 sm:p-4">
               <h2 className="font-bold text-lg sm:text-xl mb-3 sm:mb-4">
                 REVIEW YOUR DETAILS
               </h2>
@@ -1267,7 +1267,7 @@ function Hero() {
                 >
                   Mobile Phone Number *
                 </FormLabel>
-                <div className="flex w-full sm:w-3/5">
+                <div className="flex w-full sm:w-4/5">
                   <div className="bg-gray-100 border border-gray-300 rounded-l px-2 sm:px-3 flex items-center text-xs sm:text-sm">
                     +91
                   </div>
@@ -1290,7 +1290,7 @@ function Hero() {
           </div>
 
           {/* Submit Button */}
-          <div className="w-full sm:w-4/5 md:w-3/5 p-6 h-10">
+          <div className="w-full sm:w-4/5 md:w-4/5 p-6 h-10">
             <Button
               type="submit"
               className={`w-full sm:w-auto px-4 sm:px-6 py-3 sm:py-4 text-center ${
