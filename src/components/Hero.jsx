@@ -499,7 +499,7 @@ function Hero() {
   };
 
   return (
-    <div className="min-h-screen max-w-4xl mx-auto px-4 sm:px-6">
+    <div className="min-h-screen max-w-4xl mx-auto px-4 sm:px-4">
       <div className="p-2 sm:p-4 flex items-center">
         <h1 className="text-center flex-1 font-bold text-xl sm:text-2xl">
           POST YOUR AD
@@ -543,7 +543,7 @@ function Hero() {
                         ? "default"
                         : "outline"
                     }
-                    className="h-8 text-sm justify-start px-3 py-1.5 font-normal"
+                    className="h-8 text-sm justify-start px-1.5 py-1.5 font-normal"
                     onClick={() =>
                       handlePropertyTypeClick("Flats / Apartments")
                     }
@@ -557,7 +557,7 @@ function Hero() {
                         ? "default"
                         : "outline"
                     }
-                    className="h-8 text-sm justify-start px-3 py-1.5 font-normal"
+                    className="h-8 text-sm justify-start px-1.5 py-1.5 font-normal"
                     onClick={() =>
                       handlePropertyTypeClick("Independent / Builder Floors")
                     }
@@ -571,7 +571,7 @@ function Hero() {
                         ? "default"
                         : "outline"
                     }
-                    className="h-8 text-sm justify-start px-3 py-1.5 font-normal"
+                    className="h-8 text-sm justify-start px-1.5 py-1.5 font-normal"
                     onClick={() => handlePropertyTypeClick("Farm House")}
                   >
                     Farm House
@@ -583,7 +583,7 @@ function Hero() {
                         ? "default"
                         : "outline"
                     }
-                    className="h-8 text-sm justify-start px-3 py-1.5 font-normal"
+                    className="h-8 text-sm justify-start px-1.5 py-1.5 font-normal"
                     onClick={() => handlePropertyTypeClick("House & Villa")}
                   >
                     House & Villa
@@ -638,7 +638,7 @@ function Hero() {
                     variant={
                       selectedFurnishing === "Furnished" ? "default" : "outline"
                     }
-                    className="h-8 text-sm px-3 py-1.5 font-normal"
+                    className="h-8 text-sm px-1.5 py-1.5 font-normal"
                     onClick={() => handleFurnishingClick("Furnished")}
                   >
                     Furnished
@@ -650,7 +650,7 @@ function Hero() {
                         ? "default"
                         : "outline"
                     }
-                    className="h-8 text-sm px-3 py-1.5 font-normal"
+                    className="h-8 text-sm px-1.5 py-1.5 font-normal"
                     onClick={() => handleFurnishingClick("Semi Furnished")}
                   >
                     Semi Furnished
@@ -662,7 +662,7 @@ function Hero() {
                         ? "default"
                         : "outline"
                     }
-                    className="h-8 text-sm px-3 py-1.5 font-normal"
+                    className="h-8 text-sm px-1.5 py-1.5 font-normal"
                     onClick={() => handleFurnishingClick("Unfurnished")}
                   >
                     Unfurnished
@@ -680,7 +680,7 @@ function Hero() {
                         ? "default"
                         : "outline"
                     }
-                    className="h-8 text-sm px-3 py-1.5 font-normal"
+                    className="h-8 text-sm px-1.5 py-1.5 font-normal"
                     onClick={() => handleProjectStatusClick("New Launch")}
                   >
                     New Launch
@@ -692,7 +692,7 @@ function Hero() {
                         ? "default"
                         : "outline"
                     }
-                    className="h-8 text-sm px-3 py-1.5 font-normal"
+                    className="h-8 text-sm px-1.5 py-1.5 font-normal"
                     onClick={() => handleProjectStatusClick("Ready to Move")}
                   >
                     Ready to Move
@@ -704,7 +704,7 @@ function Hero() {
                         ? "default"
                         : "outline"
                     }
-                    className="h-8 text-sm px-3 py-1.5 font-normal"
+                    className="h-8 text-sm px-1.5 py-1.5 font-normal"
                     onClick={() =>
                       handleProjectStatusClick("Under Construction")
                     }
@@ -722,7 +722,7 @@ function Hero() {
                     variant={
                       selectedListedBy === "Builder" ? "default" : "outline"
                     }
-                    className="h-8 text-sm px-3 py-1.5 font-normal"
+                    className="h-8 text-sm px-1.5 py-1.5 font-normal"
                     onClick={() => handleListedByClick("Builder")}
                   >
                     Builder
@@ -732,7 +732,7 @@ function Hero() {
                     variant={
                       selectedListedBy === "Dealer" ? "default" : "outline"
                     }
-                    className="h-8 text-sm px-3 py-1.5 font-normal"
+                    className="h-8 text-sm px-1.5 py-1.5 font-normal"
                     onClick={() => handleListedByClick("Dealer")}
                   >
                     Dealer
@@ -742,7 +742,7 @@ function Hero() {
                     variant={
                       selectedListedBy === "Owner" ? "default" : "outline"
                     }
-                    className="h-8 text-sm px-3 py-1.5 font-normal"
+                    className="h-8 text-sm px-1.5 py-1.5 font-normal"
                     onClick={() => handleListedByClick("Owner")}
                   >
                     Owner
