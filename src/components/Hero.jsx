@@ -831,9 +831,7 @@ function Hero() {
               <div className="mb-6">
                 <label
                   className={`block text-sm font-medium mb-2 ${
-                    errors.superBuiltUpArea && touchedFields.superBuiltUpArea
-                      ? "text-red-500"
-                      : ""
+                    errors.superBuiltUpArea ? "text-red-500" : ""
                   }`}
                 >
                   Super Builtup area sqft
@@ -841,14 +839,26 @@ function Hero() {
                 </label>
                 <input
                   className={`border w-full md:w-[440px] h-[40px] border-[1px] rounded-sm focus:border-[#004896] focus:outline-none focus:border-3 px-4 ${
-                    errors.superBuiltUpArea && touchedFields.superBuiltUpArea
+                    errors.superBuiltUpArea
                       ? "border-red-500"
                       : "border-gray-300"
                   }`}
                   type="text"
                   inputMode="numeric"
                   {...register("superBuiltUpArea")}
-                  onChange={(e) => handleNumericInput(e, "superBuiltUpArea")}
+                  onChange={(e) => {
+                    handleNumericInput(e, "superBuiltUpArea");
+                    setTouchedFields((prev) => ({
+                      ...prev,
+                      superBuiltUpArea: true,
+                    }));
+                  }}
+                  onBlur={() =>
+                    setTouchedFields((prev) => ({
+                      ...prev,
+                      superBuiltUpArea: true,
+                    }))
+                  }
                   placeholder="Enter area in square feet"
                 />
                 {errors.superBuiltUpArea && touchedFields.superBuiltUpArea && (
@@ -861,23 +871,31 @@ function Hero() {
               <div className="mb-6">
                 <label
                   className={`block text-sm font-medium mb-2 ${
-                    errors.carpetArea && touchedFields.carpetArea
-                      ? "text-red-500"
-                      : ""
+                    errors.carpetArea ? "text-red-500" : ""
                   }`}
                 >
                   Carpet Area sqft <span className="text-red-500">*</span>
                 </label>
                 <input
                   className={`border w-full md:w-[440px] h-[40px] border-[1px] rounded-sm focus:border-[#004896] focus:outline-none focus:border-3 px-4 ${
-                    errors.carpetArea && touchedFields.carpetArea
-                      ? "border-red-500"
-                      : "border-gray-300"
+                    errors.carpetArea ? "border-red-500" : "border-gray-300"
                   }`}
                   type="text"
                   inputMode="numeric"
                   {...register("carpetArea")}
-                  onChange={(e) => handleNumericInput(e, "carpetArea")}
+                  onChange={(e) => {
+                    handleNumericInput(e, "carpetArea");
+                    setTouchedFields((prev) => ({
+                      ...prev,
+                      carpetArea: true,
+                    }));
+                  }}
+                  onBlur={() =>
+                    setTouchedFields((prev) => ({
+                      ...prev,
+                      carpetArea: true,
+                    }))
+                  }
                   placeholder="Enter carpet area in square feet"
                 />
                 {errors.carpetArea && touchedFields.carpetArea && (
