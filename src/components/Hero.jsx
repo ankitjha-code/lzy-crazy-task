@@ -574,18 +574,16 @@ function Hero() {
   };
 
   return (
-    <div className="min-h-screen max-w-4xl mx-auto px-4 sm:px-6">
-      <div className="p-2 sm:p-4 flex items-center">
-        <h1 className="text-center flex-1 font-bold text-xl sm:text-2xl">
-          POST YOUR AD
-        </h1>
-      </div>
-      <div className="bg-white pb-6 sm:pb-16 border-1 border-gray-300 rounded-md">
+    <div>
+      <div className="pt-16"></div>
+      <section className="p-6">
+        <h1 className="text-xl font-semibold text-center">POST YOUR AD</h1>
+      </section>
+      <main className="flex-1 border border-gray-300 rounded-sm max-w-3xl mt-[-10px] mx-auto w-[95%] sm:w-full bg-white">
         <form onSubmit={handleSubmit(onSubmit)}>
-          {/* SELECTED CATEGORY */}
-          <div className="border-b border-gray-300">
-            <div className="w-full sm:w-4/5 md:w-3/5 p-3 sm:p-4">
-              <h2 className="font-bold text-lg sm:text-xl mb-3 sm:mb-6">
+          <div className="divide-y divide-gray-200">
+            <section className="p-6">
+              <h2 className="text-base font-semibold mb-2 mt-[-10px]">
                 SELECTED CATEGORY
               </h2>
               <div className="flex items-center text-[12px] mt-5 text-gray-400">
@@ -597,12 +595,9 @@ function Hero() {
                   Change
                 </button>
               </div>
-            </div>
-          </div>
-          {/* INCLUDE SOME DETAILS */}
-          <div className="border-b border-gray-300">
-            <div className="w-full sm:w-4/5 md:w-3/5 p-4 sm:p-8">
-              <h2 className="font-bold text-lg sm:text-xl mb-3 sm:mb-4">
+            </section>
+            <section className="p-6">
+              <h2 className="text-base font-semibold mb-4">
                 INCLUDE SOME DETAILS
               </h2>
               <div className="mb-6">
@@ -627,13 +622,11 @@ function Hero() {
                     }}
                     className={`px-4 py-2 border rounded-md text-sm hover:bg-blue-50 hover:border-black transition-colors cursor-pointer ${
                       selectedPropertyType === "Flats / Apartments"
-                        ? "default"
-                        : "outline"
-                    }
-                    className="h-8 text-sm justify-start px-3 py-1.5 font-normal"
-                    onClick={() =>
-                      handlePropertyTypeClick("Flats / Apartments")
-                    }
+                        ? "bg-blue-100 border-black"
+                        : errors.propertyType && touchedFields.propertyType
+                        ? "border-red-500"
+                        : "border-gray-300"
+                    }`}
                   >
                     Flats / Apartments
                   </button>
@@ -648,13 +641,11 @@ function Hero() {
                     }}
                     className={`px-4 py-2 border rounded-md text-sm hover:bg-blue-50 hover:border-black transition-colors cursor-pointer ${
                       selectedPropertyType === "Independent / Builder Floors"
-                        ? "default"
-                        : "outline"
-                    }
-                    className="h-8 text-sm justify-start px-3 py-1.5 font-normal"
-                    onClick={() =>
-                      handlePropertyTypeClick("Independent / Builder Floors")
-                    }
+                        ? "bg-blue-100 border-black"
+                        : errors.propertyType && touchedFields.propertyType
+                        ? "border-red-500"
+                        : "border-gray-300"
+                    }`}
                   >
                     Independent / Builder Floors
                   </button>
@@ -669,11 +660,11 @@ function Hero() {
                     }}
                     className={`px-4 py-2 border rounded-md text-sm hover:bg-blue-50 hover:border-black transition-colors cursor-pointer ${
                       selectedPropertyType === "Farm House"
-                        ? "default"
-                        : "outline"
-                    }
-                    className="h-8 text-sm justify-start px-3 py-1.5 font-normal"
-                    onClick={() => handlePropertyTypeClick("Farm House")}
+                        ? "bg-blue-100 border-black"
+                        : errors.propertyType && touchedFields.propertyType
+                        ? "border-red-500"
+                        : "border-gray-300"
+                    }`}
                   >
                     Farm House
                   </button>
@@ -688,11 +679,11 @@ function Hero() {
                     }}
                     className={`px-4 py-2 border rounded-md text-sm hover:bg-blue-50 hover:border-black transition-colors cursor-pointer ${
                       selectedPropertyType === "House & Villa"
-                        ? "default"
-                        : "outline"
-                    }
-                    className="h-8 text-sm justify-start px-3 py-1.5 font-normal"
-                    onClick={() => handlePropertyTypeClick("House & Villa")}
+                        ? "bg-blue-100 border-black"
+                        : errors.propertyType && touchedFields.propertyType
+                        ? "border-red-500"
+                        : "border-gray-300"
+                    }`}
                   >
                     House &amp; Villa
                   </button>
@@ -751,125 +742,90 @@ function Hero() {
                     </button>
                   ))}
                 </div>
-              </FormItem>
-              {/* Furnishing */}
-              <FormItem>
-                <FormLabel>Furnishing</FormLabel>
-                <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 gap-2 mt-1">
-                  <Button
-                    type="button"
-                    variant={
-                      selectedFurnishing === "Furnished" ? "default" : "outline"
-                    }
-                    className="h-8 text-sm px-3 py-1.5 font-normal"
-                    onClick={() => handleFurnishingClick("Furnished")}
-                  >
-                    Furnished
-                  </Button>
-                  <Button
-                    type="button"
-                    variant={
-                      selectedFurnishing === "Semi Furnished"
-                        ? "default"
-                        : "outline"
-                    }
-                    className="h-8 text-sm px-3 py-1.5 font-normal"
-                    onClick={() => handleFurnishingClick("Semi Furnished")}
-                  >
-                    Semi Furnished
-                  </Button>
-                  <Button
-                    type="button"
-                    variant={
-                      selectedFurnishing === "Unfurnished"
-                        ? "default"
-                        : "outline"
-                    }
-                    className="h-8 text-sm px-3 py-1.5 font-normal"
-                    onClick={() => handleFurnishingClick("Unfurnished")}
-                  >
-                    Unfurnished
-                  </Button>
+              </div>
+              <div className="mb-6">
+                <label className="block text-sm font-medium mb-2">
+                  Furnishing
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {["Furnished", "Semi-Furnished", "Unfurnished"].map(
+                    (value) => (
+                      <button
+                        key={value}
+                        type="button"
+                        onClick={() => {
+                          handleFurnishingClick(value);
+                          setTouchedFields((prev) => ({
+                            ...prev,
+                            furnishing: true,
+                          }));
+                        }}
+                        className={`py-2 px-4 border rounded-md text-sm hover:bg-blue-50 hover:border-black transition-colors cursor-pointer ${
+                          selectedFurnishing === value
+                            ? "bg-blue-100 border-black"
+                            : "border-gray-300"
+                        }`}
+                      >
+                        {value}
+                      </button>
+                    )
+                  )}
                 </div>
-              </FormItem>
-              {/* Project Status */}
-              <FormItem>
-                <FormLabel>Project Status</FormLabel>
-                <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 gap-2 mt-1">
-                  <Button
-                    type="button"
-                    variant={
-                      selectedProjectStatus === "New Launch"
-                        ? "default"
-                        : "outline"
-                    }
-                    className="h-8 text-sm px-3 py-1.5 font-normal"
-                    onClick={() => handleProjectStatusClick("New Launch")}
-                  >
-                    New Launch
-                  </Button>
-                  <Button
-                    type="button"
-                    variant={
-                      selectedProjectStatus === "Ready to Move"
-                        ? "default"
-                        : "outline"
-                    }
-                    className="h-8 text-sm px-3 py-1.5 font-normal"
-                    onClick={() => handleProjectStatusClick("Ready to Move")}
-                  >
-                    Ready to Move
-                  </Button>
-                  <Button
-                    type="button"
-                    variant={
-                      selectedProjectStatus === "Under Construction"
-                        ? "default"
-                        : "outline"
-                    }
-                    className="h-8 text-sm px-3 py-1.5 font-normal"
-                    onClick={() =>
-                      handleProjectStatusClick("Under Construction")
-                    }
-                  >
-                    Under Construction
-                  </Button>
+              </div>
+              <div className="mb-6">
+                <label className="block text-sm font-medium mb-2">
+                  Project Status
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {["New Launch", "Ready to Move", "Under Construction"].map(
+                    (value) => (
+                      <button
+                        key={value}
+                        type="button"
+                        onClick={() => {
+                          handleProjectStatusClick(value);
+                          setTouchedFields((prev) => ({
+                            ...prev,
+                            projectStatus: true,
+                          }));
+                        }}
+                        className={`py-2 px-4 border rounded-md text-sm hover:bg-blue-50 hover:border-black transition-colors cursor-pointer ${
+                          selectedProjectStatus === value
+                            ? "bg-blue-100 border-black"
+                            : "border-gray-300"
+                        }`}
+                      >
+                        {value}
+                      </button>
+                    )
+                  )}
                 </div>
-              </FormItem>
-              {/* Listed By */}
-              <FormItem>
-                <FormLabel>Listed by</FormLabel>
-                <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 gap-2 mt-1">
-                  <Button
-                    type="button"
-                    variant={
-                      selectedListedBy === "Builder" ? "default" : "outline"
-                    }
-                    className="h-8 text-sm px-3 py-1.5 font-normal"
-                    onClick={() => handleListedByClick("Builder")}
-                  >
-                    Builder
-                  </Button>
-                  <Button
-                    type="button"
-                    variant={
-                      selectedListedBy === "Dealer" ? "default" : "outline"
-                    }
-                    className="h-8 text-sm px-3 py-1.5 font-normal"
-                    onClick={() => handleListedByClick("Dealer")}
-                  >
-                    Dealer
-                  </Button>
-                  <Button
-                    type="button"
-                    variant={
-                      selectedListedBy === "Owner" ? "default" : "outline"
-                    }
-                    className="h-8 text-sm px-3 py-1.5 font-normal"
-                    onClick={() => handleListedByClick("Owner")}
-                  >
-                    Owner
-                  </Button>
+              </div>
+              <div className="mb-6">
+                <label className="block text-sm font-medium mb-2">
+                  Listed by
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {["Builder", "Dealer", "Owner"].map((value) => (
+                    <button
+                      key={value}
+                      type="button"
+                      onClick={() => {
+                        handleListedByClick(value);
+                        setTouchedFields((prev) => ({
+                          ...prev,
+                          listedBy: true,
+                        }));
+                      }}
+                      className={`py-2 px-4 border rounded-md text-sm hover:bg-blue-50 hover:border-black transition-colors cursor-pointer ${
+                        selectedListedBy === value
+                          ? "bg-blue-100 border-black"
+                          : "border-gray-300"
+                      }`}
+                    >
+                      {value}
+                    </button>
+                  ))}
                 </div>
               </div>
               <div className="mb-6">
@@ -1173,25 +1129,13 @@ function Hero() {
                   </span>
                   <span>{descriptionCount} / 4096</span>
                 </div>
-                <div
-                  className={`text-right text-xs ${
-                    descriptionCount > 4096 ? "text-red-500" : "text-gray-500"
+              </div>
+
+              <div className="mb-6">
+                <label
+                  className={`block text-sm font-medium mb-2 ${
+                    errors.price && touchedFields.price ? "text-red-500" : ""
                   }`}
-                >
-                  {descriptionCount} / 4096
-                </div>
-              </FormItem>
-            </div>
-          </div>
-          {/* SET A PRICE */}
-          <div className="border-b border-gray-300">
-            <div className="w-full sm:w-4/5 md:w-3/5 p-3 sm:p-4">
-              <h2 className="font-bold text-lg sm:text-xl mb-3 sm:mb-4">
-                SET A PRICE
-              </h2>
-              <FormItem>
-                <FormLabel
-                  className={focusedField === "price" ? "text-purple-800" : ""}
                 >
                   Price <span className="text-red-500">*</span>
                 </label>
@@ -1212,16 +1156,16 @@ function Hero() {
                     placeholder="Enter price"
                   />
                 </div>
-                {errors.price && (
-                  <FormMessage>{errors.price.message}</FormMessage>
+                {errors.price && touchedFields.price && (
+                  <p className="text-xs text-red-500 mt-1">
+                    {errors.price.message}
+                  </p>
                 )}
-              </FormItem>
-            </div>
-          </div>
-          {/* UPLOAD UP TO 20 PHOTOS */}
-          <div className="border-b border-gray-300">
-            <div className="w-full sm:w-4/5 md:w-3/5 p-3 sm:p-4">
-              <h2 className="font-bold text-lg sm:text-xl mb-3 sm:mb-4">
+              </div>
+            </section>
+
+            <section className="p-6">
+              <h2 className="text-base font-semibold mb-4">
                 UPLOAD UP TO 20 PHOTOS
               </h2>
               <input
@@ -1291,28 +1235,22 @@ function Hero() {
                       </div>
                     ))}
               </div>
-
-              {photoError ? (
-                <div className="text-xs text-red-500 mt-2">{photoError}</div>
-              ) : photos.length === 0 ? (
-                <div className="text-xs text-red-500 mt-2">
-                  This field is mandatory
-                </div>
-              ) : (
-                <div className="text-xs text-gray-500 mt-2">
-                  {photos.length} of 20 photos added
-                </div>
+              {photoError && (
+                <p className="text-xs text-red-500 mt-2">{photoError}</p>
               )}
-
-              {errors.photos && (
-                <FormMessage>{errors.photos.message}</FormMessage>
+              {errors.photos && touchedFields.photos && (
+                <p className="text-xs text-red-500 mt-2">
+                  {errors.photos.message}
+                </p>
               )}
-            </div>
-          </div>
-          {/* CONFIRM YOUR LOCATION */}
-          <div className="border-b border-gray-300">
-            <div className="w-full sm:w-4/5 md:w-3/5 p-3 sm:p-4">
-              <h2 className="font-bold text-lg sm:text-xl mb-3 sm:mb-4">
+              <p className="text-xs text-gray-500 mt-2">
+                First photo will be the cover image. Only JPG, PNG or WEBP. Max
+                5MB each.
+              </p>
+            </section>
+
+            <section className="p-6">
+              <h2 className="text-base font-semibold mb-4">
                 CONFIRM YOUR LOCATION
               </h2>
               <div className="relative border-gray-300 mb-4">
@@ -1344,28 +1282,26 @@ function Hero() {
                         ? "border-red-500"
                         : "border-gray-300"
                     }`}
+                    {...registerField("state")}
                   >
-                    <SelectValue placeholder="Select state" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="delhi">Delhi</SelectItem>
-                    <SelectItem value="maharashtra">Maharashtra</SelectItem>
-                    <SelectItem value="karnataka">Karnataka</SelectItem>
-                    <SelectItem value="tamil-nadu">Tamil Nadu</SelectItem>
-                    <SelectItem value="uttar-pradesh">Uttar Pradesh</SelectItem>
-                  </SelectContent>
-                </Select>
-                {errors.state && (
-                  <FormMessage>{errors.state.message}</FormMessage>
+                    <option value="">Select State</option>
+                    <option value="Delhi">Delhi</option>
+                    <option value="Maharashtra">Maharashtra</option>
+                    <option value="Karnataka">Karnataka</option>
+                    <option value="Tamil Nadu">Tamil Nadu</option>
+                    <option value="Gujarat">Gujarat</option>
+                  </select>
+                </div>
+                {errors.state && touchedFields.state && (
+                  <p className="text-xs text-red-500 mt-2">
+                    {errors.state.message}
+                  </p>
                 )}
-                {/* Remove duplicate error message */}
-              </FormItem>
-            </div>
-          </div>
-          {/* REVIEW YOUR DETAILS */}
-          <div className="border-b-2 border-gray-300">
-            <div className="w-full sm:w-4/5 md:w-3/5 p-3 sm:p-4">
-              <h2 className="font-bold text-lg sm:text-xl mb-3 sm:mb-4">
+              </div>
+            </section>
+
+            <section className="p-6">
+              <h2 className="text-base font-semibold mb-4">
                 REVIEW YOUR DETAILS
               </h2>
 
@@ -1410,11 +1346,18 @@ function Hero() {
                       : ""
                   }`}
                 >
-                  Mobile Phone Number *
-                </FormLabel>
-                <div className="flex w-full sm:w-3/5">
-                  <div className="bg-gray-100 border border-gray-300 rounded-l px-2 sm:px-3 flex items-center text-xs sm:text-sm">
-                    +91
+                  Mobile Phone Number
+                  <span className="text-red-500">*</span>
+                </label>
+                <div
+                  className={`flex border rounded-md overflow-hidden focus-within:border-[#004896] focus-within:border-3 w-full md:w-[440px] h-[48px] ${
+                    errors.mobileNumber && touchedFields.mobileNumber
+                      ? "border-red-500"
+                      : "border-gray-300"
+                  }`}
+                >
+                  <div className="flex-none w-14 bg-gray-100 border-r border-gray-300 flex items-center justify-center">
+                    <span className="text-sm font-medium">+91</span>
                   </div>
                   <input
                     className="flex-1 px-4 outline-none h-full"
@@ -1437,19 +1380,25 @@ function Hero() {
               </div>
             </section>
 
-          {/* Submit Button */}
-          <div className="w-full sm:w-4/5 md:w-3/5 p-6 h-10">
-            <Button
-              type="submit"
-              className={`w-full sm:w-auto px-4 sm:px-6 py-3 sm:py-4 text-center ${
-                isFormValid
-                  ? "bg-blue-600 hover:bg-blue-700 text-white"
-                  : "bg-gray-300 text-gray-500 cursor-not-allowed"
-              }`}
-              disabled={!isFormValid}
-            >
-              Post now
-            </Button>
+            <section className="p-6">
+              <button
+                type="submit"
+                disabled={!isFormValid}
+                className={`py-2 px-6 rounded-md ${
+                  isFormValid
+                    ? "bg-blue-600 text-white cursor-pointer"
+                    : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                }`}
+              >
+                Post now
+              </button>
+              {!isFormValid && (
+                <p className="text-xs text-red-500 mt-2">
+                  Please fill in all required fields marked with * and fix any
+                  errors before submitting.
+                </p>
+              )}
+            </section>
           </div>
         </form>
       </main>
