@@ -89,6 +89,10 @@ const formSchema = z.object({
   photos: z.array(z.instanceof(File)).min(1, {
     message: "At least one photo is required. Please upload a photo.",
   }),
+  name: z
+    .string()
+    .max(30, { message: "Name cannot exceed 30 characters." })
+    .optional(),
 });
 
 // Form components
@@ -260,6 +264,7 @@ function Hero() {
   const [projectNameCount, setProjectNameCount] = useState(0);
   const [adTitleCount, setAdTitleCount] = useState(0);
   const [descriptionCount, setDescriptionCount] = useState(0);
+  const [nameCount, setNameCount] = useState(14); // Initial count for "Ankit Kumar Jha"
 
   // State to track which field is currently focused
   const [focusedField, setFocusedField] = useState(null);
@@ -302,6 +307,7 @@ function Hero() {
       state: "",
       mobileNumber: "",
       photos: [],
+      name: "Ankit Kumar Jha", // Set default value
     },
     mode: "onChange",
   });
@@ -364,6 +370,7 @@ function Hero() {
       state: "",
       mobileNumber: "",
       photos: [],
+      name: "Ankit Kumar Jha", // Reset to default value
     });
 
     // Reset all state variables
@@ -379,6 +386,7 @@ function Hero() {
     setProjectNameCount(0);
     setAdTitleCount(0);
     setDescriptionCount(0);
+    setNameCount(14); // Reset name count
 
     // Reset photos
     setPhotos([]);
@@ -1383,13 +1391,31 @@ function Hero() {
                       Name
                     </label>
                     <input
-                      className="border border-gray-300 w-full max-w-[360px] h-[40px] rounded-sm focus:border-[#004896] focus:outline-none focus:border-3 px-4"
+                      className={`border border-gray-300 w-full max-w-[360px] h-[40px] rounded-sm focus:border-[#004896] focus:outline-none focus:border-3 px-4 ${
+                        errors.name && touchedFields.name
+                          ? "border-red-500"
+                          : ""
+                      }`}
                       maxLength="30"
                       type="text"
-                      name="name"
+                      defaultValue="Ankit Kumar Jha"
+                      {...registerCountField("name", setNameCount)}
                     />
-                    <div className="flex justify-end max-w-[360px] text-xs text-gray-500 mt-2">
-                      <span>4 / 30</span>
+                    <div className="flex justify-between max-w-[360px] text-xs mt-2">
+                      {errors.name && touchedFields.name ? (
+                        <span className="text-red-500">
+                          {errors.name.message}
+                        </span>
+                      ) : (
+                        <span className="text-gray-500">Your full name</span>
+                      )}
+                      <span
+                        className={`text-gray-500 ${
+                          nameCount > 30 ? "text-red-500" : ""
+                        }`}
+                      >
+                        {nameCount} / 30
+                      </span>
                     </div>
                   </div>
                 </div>
