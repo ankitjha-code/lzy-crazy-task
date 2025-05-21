@@ -3,12 +3,11 @@ import { IoArrowBack } from "react-icons/io5";
 
 const Navbar = () => {
   return (
-    <div className="w-full h-16 bg-[#002F3408] pt-2 pb-2 pl-4 pr-4 flex items-center justify-between shadow">
-      <div className="w-12 h-12 flex items-center justify-center">
-        <IoArrowBack className="w-6 h-6" />
-      </div>
-      <div className="h-12 pl-10"></div>
-    </div>
+    <header className="fixed top-0 left-0 right-0 z-10 bg-gray-50 shadow-sm p-4">
+      <button className="p-1 cursor-pointer">
+        <IoArrowBack className="text-black" size={24} />
+      </button>
+    </header>
   );
 };
 

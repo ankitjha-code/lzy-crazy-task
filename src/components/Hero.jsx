@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -267,13 +267,18 @@ function Hero() {
   const [photoError, setPhotoError] = useState("");
   const fileInputRef = React.useRef(null);
 
+  // Add a state to track fields that have been touched/visited
+  const [touchedFields, setTouchedFields] = useState({});
+
   const {
     register,
     handleSubmit,
     setValue,
     watch,
-    reset, // Add reset function from react-hook-form
+    reset,
+    clearErrors, // Add clearErrors method
     formState: { errors, isValid, isDirty },
+    trigger,
   } = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -298,7 +303,7 @@ function Hero() {
       mobileNumber: "",
       photos: [],
     },
-    mode: "onChange", // Changed from onBlur to onChange for more responsive validation
+    mode: "onChange",
   });
 
   // Watch for all form values to validate the form
@@ -389,39 +394,84 @@ function Hero() {
     });
   }
 
-  // Helper function to handle focus and blur events
+  // Enhanced helper function to handle focus and blur events
   const handleFocus = (fieldName) => {
     setFocusedField(fieldName);
   };
 
-  const handleBlur = () => {
+  const handleBlur = async (fieldName) => {
+    // Mark field as touched
+    setTouchedFields((prev) => ({
+      ...prev,
+      [fieldName]: true,
+    }));
+
+    // Validate the field
+    await trigger(fieldName);
+
     setFocusedField(null);
   };
 
-  // Helper function to register fields with focus/blur handlers
+  // Enhanced helper function to handle input changes for validation
+  const handleInputChange = async (fieldName, value, setCountFunc = null) => {
+    // Update character count if needed
+    if (setCountFunc) {
+      setCountFunc(value.length);
+    }
+
+    // Set the field value
+    setValue(fieldName, value, { shouldValidate: true });
+
+    // If the field now has a value and previously had an error, trigger validation
+    if (value && errors[fieldName]) {
+      await trigger(fieldName);
+
+      // If validation now passes, clear the error
+      if (!errors[fieldName]) {
+        clearErrors(fieldName);
+      }
+    }
+  };
+
+  // Enhanced registration with onChange handler for immediate validation
   const registerField = (name, options = {}) => {
     return {
       ...register(name, options),
       onFocus: () => handleFocus(name),
-      onBlur: (e) => {
-        handleBlur();
-        // Call the original onBlur from react-hook-form
-        register(name).onBlur(e);
-      },
+      onBlur: () => handleBlur(name),
+      onChange: (e) => handleInputChange(name, e.target.value),
     };
   };
 
-  // Modify button click handlers to update form values
+  // Enhanced registration for fields with character counting
+  const registerCountField = (name, setCountFunc, options = {}) => {
+    return {
+      ...register(name, options),
+      onFocus: () => handleFocus(name),
+      onBlur: () => handleBlur(name),
+      onChange: (e) => handleInputChange(name, e.target.value, setCountFunc),
+    };
+  };
+
+  // Modify button click handlers to clear errors when valid
   const handlePropertyTypeClick = (value) => {
     const newValue = selectedPropertyType === value ? "" : value;
     setSelectedPropertyType(newValue);
     setValue("propertyType", newValue, { shouldValidate: true });
+
+    // If selecting a valid property type, clear the error
+    if (newValue && errors.propertyType) {
+      clearErrors("propertyType");
+    }
   };
 
   const handleBHKClick = (value) => {
     const newValue = selectedBHK === value ? "" : value;
     setSelectedBHK(newValue);
     setValue("bhk", newValue, { shouldValidate: true });
+    if (newValue && errors.bhk) {
+      clearErrors("bhk");
+    }
   };
 
   const handleBathroomsClick = (value) => {
@@ -483,10 +533,14 @@ function Hero() {
 
     if (validFiles.length > 0) {
       setPhotoError("");
-      // Limit to maximum 20 photos
       const newPhotos = [...photos, ...validFiles].slice(0, 20);
       setPhotos(newPhotos);
       setValue("photos", newPhotos, { shouldValidate: true });
+
+      // If we now have photos and there was an error, clear it
+      if (newPhotos.length > 0 && errors.photos) {
+        clearErrors("photos");
+      }
     }
   };
 
@@ -498,813 +552,856 @@ function Hero() {
     setValue("photos", newPhotos, { shouldValidate: true });
   };
 
+  // Add a function to handle numerical input
+  const handleNumericInput = (e, fieldName) => {
+    // Replace any non-digit characters with empty string
+    const numericValue = e.target.value.replace(/[^0-9]/g, "");
+    // Update the form value
+    setValue(fieldName, numericValue, { shouldValidate: true });
+
+    // Mark field as touched
+    setTouchedFields((prev) => ({
+      ...prev,
+      [fieldName]: true,
+    }));
+
+    // If field has error and now has valid input, clear error
+    if (numericValue && errors[fieldName]) {
+      clearErrors(fieldName);
+    }
+
+    return numericValue;
+  };
+
   return (
-    <div className="min-h-screen max-w-4xl mx-auto px-4 sm:px-6">
-      <div className="p-2 sm:p-4 flex items-center">
-        <h1 className="text-center flex-1 font-bold text-xl sm:text-2xl">
-          POST YOUR AD
-        </h1>
-      </div>
-      <div className="bg-white pb-6 sm:pb-16 border-1 border-gray-300 rounded-md">
+    <div>
+      <div className="pt-16"></div>
+      <section className="p-6">
+        <h1 className="text-xl font-semibold text-center">POST YOUR AD</h1>
+      </section>
+      <main className="flex-1 border border-gray-300 rounded-sm max-w-3xl mt-[-10px] mx-auto w-[95%] sm:w-full bg-white">
         <form onSubmit={handleSubmit(onSubmit)}>
-          {/* SELECTED CATEGORY */}
-          <div className="border-b border-gray-300">
-            <div className="w-full sm:w-4/5 md:w-3/5 p-3 sm:p-4">
-              <h2 className="font-bold text-lg sm:text-xl mb-3 sm:mb-6">
+          <div className="divide-y divide-gray-200">
+            <section className="p-6">
+              <h2 className="text-base font-semibold mb-2 mt-[-10px]">
                 SELECTED CATEGORY
               </h2>
-              <div className="text-xs sm:text-sm mb-3 text-gray-500">
-                <span>Properties</span>
-                <span className="mx-1">/</span>
-                <span>For Sale: Houses & Apartments</span>
+              <div className="flex items-center text-[12px] mt-5 text-gray-400">
+                <span>Properties / For Sale: Houses &amp; Apartments</span>
                 <button
                   type="button"
-                  className="ml-2 sm:ml-3 text-[#004896] font-bold underline underline-offset-4 decoration-2 hover:no-underline cursor-pointer"
+                  className="text-[#004896] underline underline-offset-4 decoration-2 ml-3 font-bold hover:text-blue-700 cursor-pointer"
                 >
                   Change
                 </button>
               </div>
-            </div>
-          </div>
-          {/* INCLUDE SOME DETAILS */}
-          <div className="border-b border-gray-300">
-            <div className="w-full sm:w-4/5 md:w-3/5 p-4 sm:p-8">
-              <h2 className="font-bold text-lg sm:text-xl mb-3 sm:mb-4">
+            </section>
+            <section className="p-6">
+              <h2 className="text-base font-semibold mb-4">
                 INCLUDE SOME DETAILS
               </h2>
-              {/* Property Type */}
-              <FormItem>
-                <FormLabel>Type *</FormLabel>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-1">
-                  <Button
+              <div className="mb-6">
+                <label
+                  className={`block text-sm font-medium mb-2 ${
+                    errors.propertyType && touchedFields.propertyType
+                      ? "text-red-500"
+                      : ""
+                  }`}
+                >
+                  Type <span className="text-red-500">*</span>
+                </label>
+                <div className="flex flex-wrap gap-2 max-w-full md:max-w-md">
+                  <button
                     type="button"
-                    variant={
+                    onClick={() => {
+                      handlePropertyTypeClick("Flats / Apartments");
+                      setTouchedFields((prev) => ({
+                        ...prev,
+                        propertyType: true,
+                      }));
+                    }}
+                    className={`px-4 py-2 border rounded-md text-sm hover:bg-blue-50 hover:border-black transition-colors cursor-pointer ${
                       selectedPropertyType === "Flats / Apartments"
-                        ? "default"
-                        : "outline"
-                    }
-                    className="h-8 text-sm justify-start px-3 py-1.5 font-normal"
-                    onClick={() =>
-                      handlePropertyTypeClick("Flats / Apartments")
-                    }
+                        ? "bg-blue-100 border-black"
+                        : errors.propertyType && touchedFields.propertyType
+                        ? "border-red-500"
+                        : "border-gray-300"
+                    }`}
                   >
                     Flats / Apartments
-                  </Button>
-                  <Button
+                  </button>
+                  <button
                     type="button"
-                    variant={
+                    onClick={() => {
+                      handlePropertyTypeClick("Independent / Builder Floors");
+                      setTouchedFields((prev) => ({
+                        ...prev,
+                        propertyType: true,
+                      }));
+                    }}
+                    className={`px-4 py-2 border rounded-md text-sm hover:bg-blue-50 hover:border-black transition-colors cursor-pointer ${
                       selectedPropertyType === "Independent / Builder Floors"
-                        ? "default"
-                        : "outline"
-                    }
-                    className="h-8 text-sm justify-start px-3 py-1.5 font-normal"
-                    onClick={() =>
-                      handlePropertyTypeClick("Independent / Builder Floors")
-                    }
+                        ? "bg-blue-100 border-black"
+                        : errors.propertyType && touchedFields.propertyType
+                        ? "border-red-500"
+                        : "border-gray-300"
+                    }`}
                   >
                     Independent / Builder Floors
-                  </Button>
-                  <Button
+                  </button>
+                  <button
                     type="button"
-                    variant={
+                    onClick={() => {
+                      handlePropertyTypeClick("Farm House");
+                      setTouchedFields((prev) => ({
+                        ...prev,
+                        propertyType: true,
+                      }));
+                    }}
+                    className={`px-4 py-2 border rounded-md text-sm hover:bg-blue-50 hover:border-black transition-colors cursor-pointer ${
                       selectedPropertyType === "Farm House"
-                        ? "default"
-                        : "outline"
-                    }
-                    className="h-8 text-sm justify-start px-3 py-1.5 font-normal"
-                    onClick={() => handlePropertyTypeClick("Farm House")}
+                        ? "bg-blue-100 border-black"
+                        : errors.propertyType && touchedFields.propertyType
+                        ? "border-red-500"
+                        : "border-gray-300"
+                    }`}
                   >
                     Farm House
-                  </Button>
-                  <Button
+                  </button>
+                  <button
                     type="button"
-                    variant={
+                    onClick={() => {
+                      handlePropertyTypeClick("House & Villa");
+                      setTouchedFields((prev) => ({
+                        ...prev,
+                        propertyType: true,
+                      }));
+                    }}
+                    className={`px-4 py-2 border rounded-md text-sm hover:bg-blue-50 hover:border-black transition-colors cursor-pointer ${
                       selectedPropertyType === "House & Villa"
-                        ? "default"
-                        : "outline"
-                    }
-                    className="h-8 text-sm justify-start px-3 py-1.5 font-normal"
-                    onClick={() => handlePropertyTypeClick("House & Villa")}
+                        ? "bg-blue-100 border-black"
+                        : errors.propertyType && touchedFields.propertyType
+                        ? "border-red-500"
+                        : "border-gray-300"
+                    }`}
                   >
-                    House & Villa
-                  </Button>
+                    House &amp; Villa
+                  </button>
                 </div>
-                {errors.propertyType && (
-                  <FormMessage>{errors.propertyType.message}</FormMessage>
+                {errors.propertyType && touchedFields.propertyType && (
+                  <p className="text-xs text-red-500 mt-1">
+                    {errors.propertyType.message}
+                  </p>
                 )}
-              </FormItem>
-              {/* BHK */}
-              <FormItem className="">
-                <FormLabel>BHK</FormLabel>
-                <div className="flex flex-wrap gap-2 mt-1">
-                  {["1", "2", "3", "4", "4+"].map((bhk) => (
-                    <Button
-                      key={bhk}
+              </div>
+              <div className="mb-6">
+                <label className="block text-sm font-medium mb-2">BHK</label>
+                <div className="flex flex-wrap gap-2">
+                  {["1", "2", "3", "4", "4+"].map((value) => (
+                    <button
+                      key={value}
                       type="button"
-                      variant={selectedBHK === bhk ? "default" : "outline"}
-                      className="h-8 w-16 p-0 min-w-[64px] text-sm font-normal"
-                      onClick={() => handleBHKClick(bhk)}
+                      onClick={() => {
+                        handleBHKClick(value);
+                        setTouchedFields((prev) => ({ ...prev, bhk: true }));
+                      }}
+                      className={`py-2 px-4 border rounded-md text-sm min-w-12 text-center hover:bg-blue-50 hover:border-black transition-colors cursor-pointer ${
+                        selectedBHK === value
+                          ? "bg-blue-100 border-black"
+                          : "border-gray-300"
+                      }`}
                     >
-                      {bhk}
-                    </Button>
+                      {value}
+                    </button>
                   ))}
                 </div>
-              </FormItem>
-              {/* Bathrooms */}
-              <FormItem>
-                <FormLabel>Bathrooms</FormLabel>
-                <div className="flex flex-wrap gap-2 mt-1">
-                  {["1", "2", "3", "4", "4+"].map((bathroom) => (
-                    <Button
-                      key={bathroom}
+              </div>
+              <div className="mb-6">
+                <label className="block text-sm font-medium mb-2">
+                  Bathrooms
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {["1", "2", "3", "4", "4+"].map((value) => (
+                    <button
+                      key={value}
                       type="button"
-                      variant={
-                        selectedBathrooms === bathroom ? "default" : "outline"
-                      }
-                      className="h-8 w-16 p-0 min-w-[64px] text-sm font-normal"
-                      onClick={() => handleBathroomsClick(bathroom)}
+                      onClick={() => {
+                        handleBathroomsClick(value);
+                        setTouchedFields((prev) => ({
+                          ...prev,
+                          bathrooms: true,
+                        }));
+                      }}
+                      className={`py-2 px-4 border rounded-md text-sm min-w-12 text-center hover:bg-blue-50 hover:border-black transition-colors cursor-pointer ${
+                        selectedBathrooms === value
+                          ? "bg-blue-100 border-black"
+                          : "border-gray-300"
+                      }`}
                     >
-                      {bathroom}
-                    </Button>
+                      {value}
+                    </button>
                   ))}
                 </div>
-              </FormItem>
-              {/* Furnishing */}
-              <FormItem>
-                <FormLabel>Furnishing</FormLabel>
-                <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 gap-2 mt-1">
-                  <Button
-                    type="button"
-                    variant={
-                      selectedFurnishing === "Furnished" ? "default" : "outline"
-                    }
-                    className="h-8 text-sm px-3 py-1.5 font-normal"
-                    onClick={() => handleFurnishingClick("Furnished")}
-                  >
-                    Furnished
-                  </Button>
-                  <Button
-                    type="button"
-                    variant={
-                      selectedFurnishing === "Semi Furnished"
-                        ? "default"
-                        : "outline"
-                    }
-                    className="h-8 text-sm px-3 py-1.5 font-normal"
-                    onClick={() => handleFurnishingClick("Semi Furnished")}
-                  >
-                    Semi Furnished
-                  </Button>
-                  <Button
-                    type="button"
-                    variant={
-                      selectedFurnishing === "Unfurnished"
-                        ? "default"
-                        : "outline"
-                    }
-                    className="h-8 text-sm px-3 py-1.5 font-normal"
-                    onClick={() => handleFurnishingClick("Unfurnished")}
-                  >
-                    Unfurnished
-                  </Button>
+              </div>
+              <div className="mb-6">
+                <label className="block text-sm font-medium mb-2">
+                  Furnishing
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {["Furnished", "Semi-Furnished", "Unfurnished"].map(
+                    (value) => (
+                      <button
+                        key={value}
+                        type="button"
+                        onClick={() => {
+                          handleFurnishingClick(value);
+                          setTouchedFields((prev) => ({
+                            ...prev,
+                            furnishing: true,
+                          }));
+                        }}
+                        className={`py-2 px-4 border rounded-md text-sm hover:bg-blue-50 hover:border-black transition-colors cursor-pointer ${
+                          selectedFurnishing === value
+                            ? "bg-blue-100 border-black"
+                            : "border-gray-300"
+                        }`}
+                      >
+                        {value}
+                      </button>
+                    )
+                  )}
                 </div>
-              </FormItem>
-              {/* Project Status */}
-              <FormItem>
-                <FormLabel>Project Status</FormLabel>
-                <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 gap-2 mt-1">
-                  <Button
-                    type="button"
-                    variant={
-                      selectedProjectStatus === "New Launch"
-                        ? "default"
-                        : "outline"
-                    }
-                    className="h-8 text-sm px-3 py-1.5 font-normal"
-                    onClick={() => handleProjectStatusClick("New Launch")}
-                  >
-                    New Launch
-                  </Button>
-                  <Button
-                    type="button"
-                    variant={
-                      selectedProjectStatus === "Ready to Move"
-                        ? "default"
-                        : "outline"
-                    }
-                    className="h-8 text-sm px-3 py-1.5 font-normal"
-                    onClick={() => handleProjectStatusClick("Ready to Move")}
-                  >
-                    Ready to Move
-                  </Button>
-                  <Button
-                    type="button"
-                    variant={
-                      selectedProjectStatus === "Under Construction"
-                        ? "default"
-                        : "outline"
-                    }
-                    className="h-8 text-sm px-3 py-1.5 font-normal"
-                    onClick={() =>
-                      handleProjectStatusClick("Under Construction")
-                    }
-                  >
-                    Under Construction
-                  </Button>
+              </div>
+              <div className="mb-6">
+                <label className="block text-sm font-medium mb-2">
+                  Project Status
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {["New Launch", "Ready to Move", "Under Construction"].map(
+                    (value) => (
+                      <button
+                        key={value}
+                        type="button"
+                        onClick={() => {
+                          handleProjectStatusClick(value);
+                          setTouchedFields((prev) => ({
+                            ...prev,
+                            projectStatus: true,
+                          }));
+                        }}
+                        className={`py-2 px-4 border rounded-md text-sm hover:bg-blue-50 hover:border-black transition-colors cursor-pointer ${
+                          selectedProjectStatus === value
+                            ? "bg-blue-100 border-black"
+                            : "border-gray-300"
+                        }`}
+                      >
+                        {value}
+                      </button>
+                    )
+                  )}
                 </div>
-              </FormItem>
-              {/* Listed By */}
-              <FormItem>
-                <FormLabel>Listed by</FormLabel>
-                <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 gap-2 mt-1">
-                  <Button
-                    type="button"
-                    variant={
-                      selectedListedBy === "Builder" ? "default" : "outline"
-                    }
-                    className="h-8 text-sm px-3 py-1.5 font-normal"
-                    onClick={() => handleListedByClick("Builder")}
-                  >
-                    Builder
-                  </Button>
-                  <Button
-                    type="button"
-                    variant={
-                      selectedListedBy === "Dealer" ? "default" : "outline"
-                    }
-                    className="h-8 text-sm px-3 py-1.5 font-normal"
-                    onClick={() => handleListedByClick("Dealer")}
-                  >
-                    Dealer
-                  </Button>
-                  <Button
-                    type="button"
-                    variant={
-                      selectedListedBy === "Owner" ? "default" : "outline"
-                    }
-                    className="h-8 text-sm px-3 py-1.5 font-normal"
-                    onClick={() => handleListedByClick("Owner")}
-                  >
-                    Owner
-                  </Button>
+              </div>
+              <div className="mb-6">
+                <label className="block text-sm font-medium mb-2">
+                  Listed by
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {["Builder", "Dealer", "Owner"].map((value) => (
+                    <button
+                      key={value}
+                      type="button"
+                      onClick={() => {
+                        handleListedByClick(value);
+                        setTouchedFields((prev) => ({
+                          ...prev,
+                          listedBy: true,
+                        }));
+                      }}
+                      className={`py-2 px-4 border rounded-md text-sm hover:bg-blue-50 hover:border-black transition-colors cursor-pointer ${
+                        selectedListedBy === value
+                          ? "bg-blue-100 border-black"
+                          : "border-gray-300"
+                      }`}
+                    >
+                      {value}
+                    </button>
+                  ))}
                 </div>
-              </FormItem>
-              {/* Super Built-up area */}
-              <FormItem>
-                <FormLabel
-                  className={
-                    focusedField === "superBuiltUpArea" ? "text-purple-800" : ""
-                  }
+              </div>
+              <div className="mb-6">
+                <label
+                  className={`block text-sm font-medium mb-2 ${
+                    errors.superBuiltUpArea && touchedFields.superBuiltUpArea
+                      ? "text-red-500"
+                      : ""
+                  }`}
                 >
-                  Super Built-up area sqft *
-                </FormLabel>
-                <FormControl>
-                  <Input
-                    {...registerField("superBuiltUpArea")}
-                    className={`h-10 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-2 ${
-                      errors.superBuiltUpArea
-                        ? "border-red-500 focus-visible:border-red-500"
-                        : "focus-visible:border-purple-800"
-                    }`}
-                  />
-                </FormControl>
-                {errors.superBuiltUpArea && (
-                  <FormMessage>{errors.superBuiltUpArea.message}</FormMessage>
+                  Super Builtup area sqft
+                  <span className="text-red-500">*</span>
+                </label>
+                <input
+                  className={`border w-full md:w-[440px] h-[40px] border-[1px] rounded-sm focus:border-[#004896] focus:outline-none focus:border-3 px-4 ${
+                    errors.superBuiltUpArea && touchedFields.superBuiltUpArea
+                      ? "border-red-500"
+                      : "border-gray-300"
+                  }`}
+                  type="text"
+                  inputMode="numeric"
+                  {...register("superBuiltUpArea")}
+                  onChange={(e) => handleNumericInput(e, "superBuiltUpArea")}
+                  placeholder="Enter area in square feet"
+                />
+                {errors.superBuiltUpArea && touchedFields.superBuiltUpArea && (
+                  <p className="text-xs text-red-500 mt-1">
+                    {errors.superBuiltUpArea.message}
+                  </p>
                 )}
-              </FormItem>
-              {/* Carpet Area */}
-              <FormItem>
-                <FormLabel
-                  className={
-                    focusedField === "carpetArea" ? "text-purple-800" : ""
-                  }
+              </div>
+
+              <div className="mb-6">
+                <label
+                  className={`block text-sm font-medium mb-2 ${
+                    errors.carpetArea && touchedFields.carpetArea
+                      ? "text-red-500"
+                      : ""
+                  }`}
                 >
-                  Carpet Area sqft *
-                </FormLabel>
-                <FormControl>
-                  <Input
-                    {...registerField("carpetArea")}
-                    className={`h-10 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-2 ${
-                      errors.carpetArea
-                        ? "border-red-500 focus-visible:border-red-500"
-                        : "focus-visible:border-purple-800"
-                    }`}
-                  />
-                </FormControl>
-                {errors.carpetArea && (
-                  <FormMessage>{errors.carpetArea.message}</FormMessage>
+                  Carpet Area sqft <span className="text-red-500">*</span>
+                </label>
+                <input
+                  className={`border w-full md:w-[440px] h-[40px] border-[1px] rounded-sm focus:border-[#004896] focus:outline-none focus:border-3 px-4 ${
+                    errors.carpetArea && touchedFields.carpetArea
+                      ? "border-red-500"
+                      : "border-gray-300"
+                  }`}
+                  type="text"
+                  inputMode="numeric"
+                  {...register("carpetArea")}
+                  onChange={(e) => handleNumericInput(e, "carpetArea")}
+                  placeholder="Enter carpet area in square feet"
+                />
+                {errors.carpetArea && touchedFields.carpetArea && (
+                  <p className="text-xs text-red-500 mt-1">
+                    {errors.carpetArea.message}
+                  </p>
                 )}
-              </FormItem>
-              {/* Maintenance */}
-              <FormItem>
-                <FormLabel
-                  className={
-                    focusedField === "maintenance" ? "text-purple-800" : ""
-                  }
+              </div>
+
+              <div className="mb-6">
+                <label
+                  className={`block text-sm font-medium mb-2 ${
+                    errors.maintenance && touchedFields.maintenance
+                      ? "text-red-500"
+                      : ""
+                  }`}
                 >
                   Maintenance (Monthly)
-                </FormLabel>
-                <FormControl>
-                  <Input
-                    {...registerField("maintenance")}
-                    className="h-10 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-2 focus-visible:border-purple-800"
-                  />
-                </FormControl>
-              </FormItem>
-              {/* Total Floors */}
-              <FormItem>
-                <FormLabel
-                  className={
-                    focusedField === "totalFloors" ? "text-purple-800" : ""
-                  }
+                </label>
+                <input
+                  className={`border w-full md:w-[440px] h-[40px] border-[1px] rounded-sm focus:border-[#004896] focus:outline-none focus:border-3 px-4 ${
+                    errors.maintenance && touchedFields.maintenance
+                      ? "border-red-500"
+                      : "border-gray-300"
+                  }`}
+                  type="text"
+                  inputMode="numeric"
+                  {...register("maintenance")}
+                  onChange={(e) => handleNumericInput(e, "maintenance")}
+                  placeholder="Enter monthly maintenance amount"
+                />
+                {errors.maintenance && touchedFields.maintenance && (
+                  <p className="text-xs text-red-500 mt-1">
+                    {errors.maintenance.message}
+                  </p>
+                )}
+              </div>
+
+              <div className="mb-6">
+                <label
+                  className={`block text-sm font-medium mb-2 ${
+                    errors.totalFloors && touchedFields.totalFloors
+                      ? "text-red-500"
+                      : ""
+                  }`}
                 >
                   Total Floors
-                </FormLabel>
-                <FormControl>
-                  <Input
-                    {...registerField("totalFloors")}
-                    className="h-10 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-2 focus-visible:border-purple-800"
-                  />
-                </FormControl>
-              </FormItem>
-              {/* Floor No */}
-              <FormItem>
-                <FormLabel
-                  className={
-                    focusedField === "floorNo" ? "text-purple-800" : ""
-                  }
+                </label>
+                <input
+                  className={`border w-full md:w-[440px] h-[40px] border-[1px] rounded-sm focus:border-[#004896] focus:outline-none focus:border-3 px-4 ${
+                    errors.totalFloors && touchedFields.totalFloors
+                      ? "border-red-500"
+                      : "border-gray-300"
+                  }`}
+                  type="text"
+                  inputMode="numeric"
+                  {...register("totalFloors")}
+                  onChange={(e) => handleNumericInput(e, "totalFloors")}
+                  placeholder="Enter total number of floors"
+                />
+                {errors.totalFloors && touchedFields.totalFloors && (
+                  <p className="text-xs text-red-500 mt-1">
+                    {errors.totalFloors.message}
+                  </p>
+                )}
+              </div>
+
+              <div className="mb-6">
+                <label
+                  className={`block text-sm font-medium mb-2 ${
+                    errors.floorNo && touchedFields.floorNo
+                      ? "text-red-500"
+                      : ""
+                  }`}
                 >
                   Floor No
-                </FormLabel>
-                <FormControl>
-                  <Input
-                    {...registerField("floorNo")}
-                    className="h-10 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-2 focus-visible:border-purple-800"
-                  />
-                </FormControl>
-              </FormItem>
-              {/* Car Parking */}
-              <FormItem>
-                <FormLabel>Car Parking</FormLabel>
-                <div className="flex gap-2 mt-1">
-                  {["0", "1", "2", "3", "3+"].map((parking) => (
-                    <Button
-                      key={parking}
-                      type="button"
-                      variant={
-                        selectedCarParking === parking ? "default" : "outline"
-                      }
-                      className="h-8 w-16 p-0 min-w-[64px] text-sm font-normal"
-                      onClick={() => handleCarParkingClick(parking)}
-                    >
-                      {parking}
-                    </Button>
-                  ))}
-                </div>
-              </FormItem>
-              {/* Facing */}
-              <FormItem>
-                <FormLabel
-                  className={focusedField === "facing" ? "text-purple-800" : ""}
-                >
-                  Facing
-                </FormLabel>
-                <Select
-                  onValueChange={(value) => {
-                    setValue("facing", value, { shouldValidate: true });
-                  }}
-                  onOpenChange={(open) => {
-                    if (open) handleFocus("facing");
-                    else handleBlur();
-                  }}
-                >
-                  <SelectTrigger
-                    className={`h-10 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-2 
-      ${focusedField === "facing" ? "border-purple-800 border-2" : ""}`}
-                  >
-                    <SelectValue placeholder="" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="east">East</SelectItem>
-                    <SelectItem value="west">West</SelectItem>
-                    <SelectItem value="north">North</SelectItem>
-                    <SelectItem value="south">South</SelectItem>
-                    <SelectItem value="north-east">North East</SelectItem>
-                    <SelectItem value="north-west">North West</SelectItem>
-                    <SelectItem value="south-east">South East</SelectItem>
-                    <SelectItem value="south-west">South West</SelectItem>
-                  </SelectContent>
-                </Select>
-              </FormItem>
-              {/* Project Name */}
-              <FormItem>
-                <FormLabel
-                  className={
-                    focusedField === "projectName" ? "text-purple-800" : ""
-                  }
-                >
-                  Project Name
-                </FormLabel>
-                <FormControl>
-                  <Input
-                    {...registerField("projectName")}
-                    className={`h-10 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-2 ${
-                      !isProjectNameValid
-                        ? "border-red-500 focus-visible:border-red-500"
-                        : "focus-visible:border-purple-800"
-                    }`}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      if (value.length <= 70) {
-                        setProjectNameCount(value.length);
-                        setValue("projectName", value, {
-                          shouldValidate: true,
-                        });
-                      }
-                    }}
-                    maxLength={70}
-                  />
-                </FormControl>
-                <div
-                  className={`text-right text-xs ${
-                    projectNameCount > 70 ? "text-red-500" : "text-gray-500"
+                </label>
+                <input
+                  className={`border w-full md:w-[440px] h-[40px] border-[1px] rounded-sm focus:border-[#004896] focus:outline-none focus:border-3 px-4 ${
+                    errors.floorNo && touchedFields.floorNo
+                      ? "border-red-500"
+                      : "border-gray-300"
                   }`}
-                >
-                  {projectNameCount} / 70
-                </div>
-                {errors.projectName && (
-                  <FormMessage>{errors.projectName.message}</FormMessage>
+                  type="text"
+                  inputMode="numeric"
+                  {...register("floorNo")}
+                  onChange={(e) => handleNumericInput(e, "floorNo")}
+                  placeholder="Enter floor number"
+                />
+                {errors.floorNo && touchedFields.floorNo && (
+                  <p className="text-xs text-red-500 mt-1">
+                    {errors.floorNo.message}
+                  </p>
                 )}
-              </FormItem>
+              </div>
 
-              {/* Ad title */}
-              <FormItem>
-                <FormLabel
-                  className={
-                    focusedField === "adTitle" ? "text-purple-800" : ""
-                  }
-                >
-                  Ad title *
-                </FormLabel>
-                <FormControl>
-                  <Input
-                    {...registerField("adTitle")}
-                    className={`h-10 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-2 ${
-                      errors.adTitle || !isAdTitleValid
-                        ? "border-red-500 focus-visible:border-red-500"
-                        : "focus-visible:border-purple-800"
-                    }`}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      if (value.length <= 70) {
-                        setAdTitleCount(value.length);
-                        setValue("adTitle", value, { shouldValidate: true });
-                      }
-                    }}
-                    maxLength={70}
-                  />
-                </FormControl>
-                {errors.adTitle && (
-                  <FormMessage>{errors.adTitle.message}</FormMessage>
-                )}
-                <div className="text-xs text-gray-500 mt-1">
-                  Mention the key features of your item (e.g. brand, model, age,
-                  type)
-                </div>
-                <div
-                  className={`text-right text-xs ${
-                    adTitleCount > 70 ? "text-red-500" : "text-gray-500"
-                  }`}
-                >
-                  {adTitleCount} / 70
-                </div>
-              </FormItem>
-
-              {/* Description */}
-              <FormItem>
-                <FormLabel
-                  className={
-                    focusedField === "description" ? "text-purple-800" : ""
-                  }
-                >
-                  Description *
-                </FormLabel>
-                <FormControl>
-                  <Textarea
-                    {...registerField("description")}
-                    className={`min-h-[100px] focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-2 ${
-                      errors.description || !isDescriptionValid
-                        ? "border-red-500 focus-visible:border-red-500"
-                        : "focus-visible:border-purple-800"
-                    }`}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      if (value.length <= 4096) {
-                        setDescriptionCount(value.length);
-                        setValue("description", value, {
-                          shouldValidate: true,
-                        });
-                      }
-                    }}
-                    maxLength={4096}
-                  />
-                </FormControl>
-                {errors.description && (
-                  <FormMessage>{errors.description.message}</FormMessage>
-                )}
-                <div className="text-xs text-gray-500 mt-1">
-                  Include condition, features and reason for selling
-                </div>
-                <div
-                  className={`text-right text-xs ${
-                    descriptionCount > 4096 ? "text-red-500" : "text-gray-500"
-                  }`}
-                >
-                  {descriptionCount} / 4096
-                </div>
-              </FormItem>
-            </div>
-          </div>
-          {/* SET A PRICE */}
-          <div className="border-b border-gray-300">
-            <div className="w-full sm:w-4/5 md:w-3/5 p-3 sm:p-4">
-              <h2 className="font-bold text-lg sm:text-xl mb-3 sm:mb-4">
-                SET A PRICE
-              </h2>
-              <FormItem>
-                <FormLabel
-                  className={focusedField === "price" ? "text-purple-800" : ""}
-                >
-                  Price *
-                </FormLabel>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                    <span className="text-gray-500">₹</span>
-                    <div className="block h-6 w-px bg-gray-300 mx-4"></div>
-                  </div>
-
-                  <FormControl>
-                    <Input
-                      {...registerField("price")}
-                      className={`h-10 pl-7 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-2 ${
-                        errors.price
-                          ? "border-red-500 focus-visible:border-red-500"
-                          : "focus-visible:border-purple-800"
-                      }`}
-                    />
-                  </FormControl>
-                </div>
-                {errors.price && (
-                  <FormMessage>{errors.price.message}</FormMessage>
-                )}
-              </FormItem>
-            </div>
-          </div>
-          {/* UPLOAD UP TO 20 PHOTOS */}
-          <div className="border-b border-gray-300">
-            <div className="w-full sm:w-4/5 md:w-3/5 p-3 sm:p-4">
-              <h2 className="font-bold text-lg sm:text-xl mb-3 sm:mb-4">
-                UPLOAD UP TO 20 PHOTOS
-              </h2>
-
-              {/* Hidden file input */}
-              <input
-                type="file"
-                ref={fileInputRef}
-                accept="image/jpeg,image/png,image/jpg,image/webp"
-                multiple
-                className="hidden"
-                onChange={handleFileChange}
-              />
-
-              <div className="grid grid-cols-2 xs:grid-cols-4 sm:grid-cols-4 gap-2">
-                {/* Render uploaded photos */}
-                {photos.map((photo, index) => (
-                  <div
-                    key={`photo-${index}`}
-                    className="border border-gray-300 rounded aspect-square relative overflow-hidden group"
-                  >
-                    <img
-                      src={URL.createObjectURL(photo)}
-                      alt={`Preview ${index}`}
-                      className="h-full w-full object-cover"
-                    />
+              <div className="mb-6">
+                <label className="block text-sm font-medium mb-2">
+                  Car Parking
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {["0", "1", "2", "3", "3+"].map((value) => (
                     <button
+                      key={value}
                       type="button"
-                      onClick={() => handleRemovePhoto(index)}
-                      className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                      onClick={() => handleCarParkingClick(value)}
+                      className={`py-2 px-6 border rounded-md text-sm min-w-12 text-center hover:bg-blue-50 hover:border-black transition-colors cursor-pointer ${
+                        selectedCarParking === value
+                          ? "bg-blue-100 border-black"
+                          : "border-gray-300"
+                      }`}
                     >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-4 w-4"
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
+                      {value}
                     </button>
-                  </div>
-                ))}
-
-                {/* Empty boxes to complete the grid */}
-                {Array.from({ length: Math.max(1, 20 - photos.length) }).map(
-                  (_, index) => (
-                    <div
-                      key={`empty-${index}`}
-                      onClick={() => handlePhotoClick(photos.length + index)}
-                      className={`border ${
-                        index === 0 ? "border-black" : "border-gray-300"
-                      } rounded aspect-square flex flex-col items-center justify-center ${
-                        index === 0 ? "text-black" : "text-gray-400"
-                      } cursor-pointer hover:bg-gray-50`}
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-6 w-6"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
-                        />
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
-                        />
-                      </svg>
-                      {index === 0 && (
-                        <span className="text-xs mt-1">Add Photo</span>
-                      )}
-                    </div>
-                  )
-                )}
-              </div>
-
-              {photoError ? (
-                <div className="text-xs text-red-500 mt-2">{photoError}</div>
-              ) : photos.length === 0 ? (
-                <div className="text-xs text-red-500 mt-2">
-                  This field is mandatory
-                </div>
-              ) : (
-                <div className="text-xs text-gray-500 mt-2">
-                  {photos.length} of 20 photos added
-                </div>
-              )}
-
-              {errors.photos && (
-                <FormMessage>{errors.photos.message}</FormMessage>
-              )}
-            </div>
-          </div>
-          {/* CONFIRM YOUR LOCATION */}
-          <div className="border-b border-gray-300">
-            <div className="w-full sm:w-4/5 md:w-3/5 p-3 sm:p-4">
-              <h2 className="font-bold text-lg sm:text-xl mb-3 sm:mb-4">
-                CONFIRM YOUR LOCATION
-              </h2>
-              <div className="flex border-b border-gray-300 mb-4">
-                <button
-                  type="button"
-                  className="py-1 sm:py-2 px-2 sm:px-4 border-b-2 border-blue-500 font-medium text-xs sm:text-sm"
-                >
-                  LIST
-                </button>
-                <button
-                  type="button"
-                  className="py-1 sm:py-2 px-2 sm:px-4 text-xs sm:text-sm"
-                >
-                  CURRENT LOCATION
-                </button>
-              </div>
-              <FormItem>
-                <FormLabel
-                  className={focusedField === "state" ? "text-purple-800" : ""}
-                >
-                  State *
-                </FormLabel>
-                <Select
-                  onValueChange={(value) => {
-                    setValue("state", value, { shouldValidate: true });
-                  }}
-                  onOpenChange={(open) => {
-                    if (open) handleFocus("state");
-                    else handleBlur();
-                  }}
-                >
-                  <SelectTrigger
-                    className={`h-10 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-2 ${
-                      errors.state
-                        ? "border-red-500 focus-visible:border-red-500"
-                        : "focus-visible:border-purple-800"
-                    }`}
-                  >
-                    <SelectValue placeholder="Select state" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="delhi">Delhi</SelectItem>
-                    <SelectItem value="maharashtra">Maharashtra</SelectItem>
-                    <SelectItem value="karnataka">Karnataka</SelectItem>
-                    <SelectItem value="tamil-nadu">Tamil Nadu</SelectItem>
-                    <SelectItem value="uttar-pradesh">Uttar Pradesh</SelectItem>
-                  </SelectContent>
-                </Select>
-                {errors.state && (
-                  <FormMessage>{errors.state.message}</FormMessage>
-                )}
-                {/* Remove duplicate error message */}
-              </FormItem>
-            </div>
-          </div>
-          {/* REVIEW YOUR DETAILS */}
-          <div className="border-b-2 border-gray-300">
-            <div className="w-full sm:w-4/5 md:w-3/5 p-3 sm:p-4">
-              <h2 className="font-bold text-lg sm:text-xl mb-3 sm:mb-4">
-                REVIEW YOUR DETAILS
-              </h2>
-
-              {/* Profile section with improved alignment */}
-              <div className="flex flex-col sm:flex-row items-center sm:items-start mb-4">
-                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-blue-500 overflow-hidden mb-3 sm:mb-0 sm:mr-3">
-                  <img
-                    src="https://media2.dev.to/dynamic/image/width=800%2Cheight=%2Cfit=scale-down%2Cgravity=auto%2Cformat=auto/https%3A%2F%2Fwww.gravatar.com%2Favatar%2F2c7d99fe281ecd3bcd65ab915bac6dd5%3Fs%3D250"
-                    alt="Profile"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div className="flex flex-col justify-center text-center sm:text-left">
-                  <div className="font-medium text-lg sm:text-xl">
-                    Ankit Kumar Jha
-                  </div>
-                  <div className="text-xs text-gray-500">11 / 70</div>
+                  ))}
                 </div>
               </div>
 
               <div className="mb-6">
-                <h3 className="font-medium text-sm mb-2">
-                  Let's verify your account
-                </h3>
-                <p className="text-xs text-gray-700">
-                  We will send you a confirmation code by sms on the next step.
-                </p>
+                <label
+                  className={`block text-sm font-medium mb-2 ${
+                    errors.facing && touchedFields.facing ? "text-red-500" : ""
+                  }`}
+                >
+                  Facing
+                </label>
+                <div className="relative">
+                  <select
+                    className={`border w-full md:w-[440px] h-[40px] border-[1px] rounded-sm focus:border-[#004896] focus:outline-none focus:border-3 px-4 custom-select ${
+                      errors.facing && touchedFields.facing
+                        ? "border-red-500"
+                        : "border-gray-300"
+                    }`}
+                    {...registerField("facing")}
+                  >
+                    <option value="">Select</option>
+                    <option value="North">North</option>
+                    <option value="South">South</option>
+                    <option value="East">East</option>
+                    <option value="West">West</option>
+                    <option value="North-East">North-East</option>
+                    <option value="North-West">North-West</option>
+                    <option value="South-East">South-East</option>
+                    <option value="South-West">South-West</option>
+                  </select>
+                </div>
+                {errors.facing && touchedFields.facing && (
+                  <p className="text-xs text-red-500 mt-1">
+                    {errors.facing.message}
+                  </p>
+                )}
               </div>
 
-              <FormItem>
-                <FormLabel
-                  className={
-                    focusedField === "mobileNumber" ? "text-purple-800" : ""
-                  }
+              <div className="mb-6 w-full md:w-[440px]">
+                <label
+                  className={`block text-sm font-medium mb-2 ${
+                    errors.projectName && touchedFields.projectName
+                      ? "text-red-500"
+                      : ""
+                  }`}
                 >
-                  Mobile Phone Number *
-                </FormLabel>
-                <div className="flex w-full sm:w-3/5">
-                  <div className="bg-gray-100 border border-gray-300 rounded-l px-2 sm:px-3 flex items-center text-xs sm:text-sm">
-                    +91
-                  </div>
-                  <FormControl>
-                    <Input
-                      {...registerField("mobileNumber")}
-                      className={`h-10 rounded-l-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-2 ${
-                        errors.mobileNumber
-                          ? "border-red-500 focus-visible:border-red-500"
-                          : "focus-visible:border-purple-800"
-                      }`}
-                    />
-                  </FormControl>
+                  Project Name
+                </label>
+                <input
+                  className={`border w-full md:w-[440px] h-[40px] border-[1px] rounded-sm focus:border-[#004896] focus:outline-none focus:border-3 px-4 ${
+                    errors.projectName && touchedFields.projectName
+                      ? "border-red-500"
+                      : "border-gray-300"
+                  }`}
+                  maxLength="70"
+                  type="text"
+                  {...registerField("projectName")}
+                  onChange={(e) => setProjectNameCount(e.target.value.length)}
+                />
+                <div className="flex justify-end text-xs text-gray-500 mt-2">
+                  <span>{projectNameCount} / 70</span>
                 </div>
-                {errors.mobileNumber && (
-                  <FormMessage>{errors.mobileNumber.message}</FormMessage>
+                {errors.projectName && touchedFields.projectName && (
+                  <p className="text-xs text-red-500 mt-1">
+                    {errors.projectName.message}
+                  </p>
                 )}
-              </FormItem>
-            </div>
-          </div>
+              </div>
 
-          {/* Submit Button */}
-          <div className="w-full sm:w-4/5 md:w-3/5 p-6 h-10">
-            <Button
-              type="submit"
-              className={`w-full sm:w-auto px-4 sm:px-6 py-3 sm:py-4 text-center ${
-                isFormValid
-                  ? "bg-blue-600 hover:bg-blue-700 text-white"
-                  : "bg-gray-300 text-gray-500 cursor-not-allowed"
-              }`}
-              disabled={!isFormValid}
-            >
-              Post now
-            </Button>
+              <div className="mb-6 w-full md:w-[440px]">
+                <label
+                  className={`block text-sm font-medium mb-2 ${
+                    errors.adTitle && touchedFields.adTitle
+                      ? "text-red-500"
+                      : ""
+                  }`}
+                >
+                  Ad title <span className="text-red-500">*</span>
+                </label>
+                <input
+                  className={`border w-full md:w-[440px] h-[40px] border-[1px] rounded-sm focus:border-[#004896] focus:outline-none focus:border-3 px-4 ${
+                    errors.adTitle && touchedFields.adTitle
+                      ? "border-red-500"
+                      : "border-gray-300"
+                  }`}
+                  maxLength="70"
+                  type="text"
+                  {...registerCountField("adTitle", setAdTitleCount)}
+                  placeholder={
+                    errors.adTitle && touchedFields.adTitle
+                      ? errors.adTitle.message
+                      : "Mention key features (e.g. brand, model, age, type)"
+                  }
+                />
+                <div className="flex flex-col sm:flex-row justify-between text-xs text-gray-500 mt-2">
+                  <span className="mb-1 sm:mb-0">
+                    {errors.adTitle && touchedFields.adTitle
+                      ? ""
+                      : "Mention the key features of your item (e.g. brand, model, age, type)"}
+                  </span>
+                  <span>{adTitleCount} / 70</span>
+                </div>
+              </div>
+
+              <div className="mb-6 w-full md:w-[440px]">
+                <label
+                  className={`block text-sm font-medium mb-2 ${
+                    errors.description && touchedFields.description
+                      ? "text-red-500"
+                      : ""
+                  }`}
+                >
+                  Description <span className="text-red-500">*</span>
+                </label>
+                <textarea
+                  className={`py-2 border w-full md:w-[440px] h-[48px] px-4 border-[1px] rounded-sm focus:outline-none min-h-32 ${
+                    errors.description && touchedFields.description
+                      ? "border-red-500"
+                      : "border-gray-300"
+                  }`}
+                  {...registerCountField("description", setDescriptionCount)}
+                  maxLength="4096"
+                  placeholder={
+                    errors.description && touchedFields.description
+                      ? errors.description.message
+                      : "Include condition, features and reason for selling"
+                  }
+                ></textarea>
+                <div className="flex justify-between text-xs text-gray-500 mt-2">
+                  <span>
+                    {errors.description && touchedFields.description
+                      ? ""
+                      : "Include condition, features and reason for selling"}
+                  </span>
+                  <span>{descriptionCount} / 4096</span>
+                </div>
+              </div>
+
+              <div className="mb-6">
+                <label
+                  className={`block text-sm font-medium mb-2 ${
+                    errors.price && touchedFields.price ? "text-red-500" : ""
+                  }`}
+                >
+                  Price <span className="text-red-500">*</span>
+                </label>
+                <div className="relative">
+                  <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
+                    ₹
+                  </span>
+                  <input
+                    className={`border w-full md:w-[440px] h-[48px] px-4 pl-6 rounded-sm ${
+                      errors.price && touchedFields.price
+                        ? "border-red-500"
+                        : "border-gray-300"
+                    }`}
+                    type="text"
+                    inputMode="numeric"
+                    {...register("price")}
+                    onChange={(e) => handleNumericInput(e, "price")}
+                    placeholder="Enter price"
+                  />
+                </div>
+                {errors.price && touchedFields.price && (
+                  <p className="text-xs text-red-500 mt-1">
+                    {errors.price.message}
+                  </p>
+                )}
+              </div>
+            </section>
+
+            <section className="p-6">
+              <h2 className="text-base font-semibold mb-4">
+                UPLOAD UP TO 20 PHOTOS
+              </h2>
+              <input
+                ref={fileInputRef}
+                multiple
+                accept="image/*"
+                className="hidden"
+                type="file"
+                onChange={handleFileChange}
+              />
+              <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-4 w-fit gap-2">
+                <div
+                  onClick={() => {
+                    handlePhotoClick(0);
+                    setTouchedFields((prev) => ({ ...prev, photos: true }));
+                  }}
+                  className={`border-2 w-20 sm:w-24 md:w-[103px] h-20 sm:h-24 md:h-[103px] flex items-center justify-center cursor-pointer ${
+                    errors.photos && touchedFields.photos && photos.length === 0
+                      ? "border-red-500"
+                      : "border-black"
+                  }`}
+                >
+                  <div className="flex flex-col items-center">
+                    <img
+                      alt="Add Photo"
+                      className="w-9 h-9"
+                      src="data:image/svg+xml,%3csvg%20xmlns='http://www.w3.org/2000/svg'%20width='36px'%20height='36px'%20viewBox='0%200%201024%201024'%20data-aut-id='icon'%20class=''%20fill-rule='evenodd'%3e%3cpath%20class='rui-jB92v'%20d='M861.099%20667.008v78.080h77.568v77.653h-77.568v77.141h-77.568v-77.184h-77.611v-77.611h77.611v-78.080h77.568zM617.515%20124.16l38.784%20116.437h165.973l38.827%2038.827v271.659l-38.827%2038.357-38.741-38.4v-232.832h-183.125l-38.784-116.48h-176.853l-38.784%20116.48h-183.083v426.923h426.667l38.784%2038.357-38.784%2039.253h-465.493l-38.741-38.869v-504.491l38.784-38.827h165.973l38.827-116.437h288.597zM473.216%20318.208c106.837%200%20193.92%2086.955%20193.92%20194.048%200%20106.923-87.040%20194.091-193.92%20194.091s-193.963-87.168-193.963-194.091c0-107.093%2087.083-194.048%20193.963-194.048zM473.216%20395.861c-64.213%200-116.352%2052.181-116.352%20116.395%200%2064.256%2052.139%20116.437%20116.352%20116.437%2064.171%200%20116.352-52.181%20116.352-116.437%200-64.213-52.181-116.437-116.352-116.437z'/%3e%3c/svg%3e"
+                    />
+                    <span className="text-xs mt-1">Add Photo</span>
+                  </div>
+                </div>
+
+                {photos.map((photo, index) => (
+                  <div
+                    key={index}
+                    className="border-2 w-20 sm:w-24 md:w-[103px] h-20 sm:h-24 md:h-[103px] border-gray-400 relative"
+                  >
+                    <img
+                      src={URL.createObjectURL(photo)}
+                      alt={`Photo ${index + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleRemovePhoto(index)}
+                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+
+                {photos.length < 20 &&
+                  Array(Math.min(3, 20 - photos.length))
+                    .fill()
+                    .map((_, idx) => (
+                      <div
+                        key={`placeholder-${idx}`}
+                        onClick={() => handlePhotoClick(photos.length + idx)}
+                        className="border-2 w-20 sm:w-24 md:w-[103px] h-20 sm:h-24 md:h-[103px] border-gray-400 flex items-center justify-center cursor-pointer"
+                      >
+                        <img
+                          className="text-gray-100 w-9 h-9"
+                          alt="img-logo"
+                          src="data:image/svg+xml,%3csvg%20xmlns='http://www.w3.org/2000/svg'%20width='40px'%20height='40px'%20viewBox='0%200%201024%201024'%20data-aut-id='icon'%20class=''%20fill-rule='evenodd'%3e%3cpath%20class='rui-jB92v'%20fill='%238D9094'%20d='M861.099%20667.008v78.080h77.568v77.653h-77.568v77.141h-77.568v-77.184h-77.611v-77.611h77.611v-78.080h77.568zM617.515%20124.16l38.784%20116.437h165.973l38.827%2038.827v271.659l-38.827%2038.357-38.741-38.4v-232.832h-183.125l-38.784-116.48h-176.853l-38.784%20116.48h-183.083v426.923h426.667l38.784%2038.357-38.784%2039.253h-465.493l-38.741-38.869v-504.491l38.784-38.827h165.973l38.827-116.437h288.597zM473.216%20318.208c106.837%200%20193.92%2086.955%20193.92%20194.048%200%20106.923-87.040%20194.091-193.92%20194.091s-193.963-87.168-193.963-194.091c0-107.093%2087.083-194.048%20193.963-194.048zM473.216%20395.861c-64.213%200-116.352%2052.181-116.352%20116.395%200%2064.256%2052.139%20116.437%20116.352%20116.437%2064.171%200%20116.352-52.181%20116.352-116.437%200-64.213-52.181-116.437-116.352-116.437z'/%3e%3c/svg%3e"
+                        />
+                      </div>
+                    ))}
+              </div>
+              {photoError && (
+                <p className="text-xs text-red-500 mt-2">{photoError}</p>
+              )}
+              {errors.photos && touchedFields.photos && (
+                <p className="text-xs text-red-500 mt-2">
+                  {errors.photos.message}
+                </p>
+              )}
+              <p className="text-xs text-gray-500 mt-2">
+                First photo will be the cover image. Only JPG, PNG or WEBP. Max
+                5MB each.
+              </p>
+            </section>
+
+            <section className="p-6">
+              <h2 className="text-base font-semibold mb-4">
+                CONFIRM YOUR LOCATION
+              </h2>
+              <div className="relative border-gray-300 mb-4">
+                <div className="flex flex-wrap">
+                  <button type="button" className="py-2 px-4 cursor-pointer">
+                    <div className="w-full sm:w-40 text-center text-sm font-semibold pb-1 border-b-2 border-[#004896] text-black hover:bg-blue-50 transition-colors">
+                      LIST
+                    </div>
+                  </button>
+                  <button type="button" className="py-2 px-4 cursor-pointer">
+                    <div className="w-full sm:w-40 text-center text-sm font-semibold pb-1 text-gray-500 hover:bg-blue-50 hover:text-gray-700 transition-colors">
+                      CURRENT LOCATION
+                    </div>
+                  </button>
+                </div>
+              </div>
+              <div className="mb-6">
+                <label
+                  className={`block text-sm font-medium mb-2 ${
+                    errors.state && touchedFields.state ? "text-red-500" : ""
+                  }`}
+                >
+                  State <span className="text-red-500">*</span>
+                </label>
+                <div className="relative">
+                  <select
+                    className={`border w-full md:w-[440px] h-[40px] border-[1px] rounded-sm focus:border-[#004896] focus:outline-none focus:border-3 px-4 custom-select ${
+                      errors.state && touchedFields.state
+                        ? "border-red-500"
+                        : "border-gray-300"
+                    }`}
+                    {...registerField("state")}
+                  >
+                    <option value="">Select State</option>
+                    <option value="Delhi">Delhi</option>
+                    <option value="Maharashtra">Maharashtra</option>
+                    <option value="Karnataka">Karnataka</option>
+                    <option value="Tamil Nadu">Tamil Nadu</option>
+                    <option value="Gujarat">Gujarat</option>
+                  </select>
+                </div>
+                {errors.state && touchedFields.state && (
+                  <p className="text-xs text-red-500 mt-2">
+                    {errors.state.message}
+                  </p>
+                )}
+              </div>
+            </section>
+
+            <section className="p-6">
+              <h2 className="text-base font-semibold mb-4">
+                REVIEW YOUR DETAILS
+              </h2>
+
+              {/* Fixed Name input section with proper alignment */}
+              <div className="mb-6">
+                <div className="flex items-start">
+                  <div className="w-20 h-20 rounded-full flex items-center justify-center text-white text-3xl mr-4 flex-shrink-0">
+                    <img
+                      src="https://media2.dev.to/dynamic/image/width=800%2Cheight=%2Cfit=scale-down%2Cgravity=auto%2Cformat=auto/https%3A%2F%2Fwww.gravatar.com%2Favatar%2F2c7d99fe281ecd3bcd65ab915bac6dd5%3Fs%3D250"
+                      className="rounded-full"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <label className="block text-sm font-medium mb-2">
+                      Name
+                    </label>
+                    <input
+                      className="border border-gray-300 w-full max-w-[360px] h-[40px] rounded-sm focus:border-[#004896] focus:outline-none focus:border-3 px-4"
+                      maxLength="30"
+                      type="text"
+                      name="name"
+                    />
+                    <div className="flex justify-end max-w-[360px] text-xs text-gray-500 mt-2">
+                      <span>4 / 30</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mb-6">
+                <h3 className="text-base font-medium mb-2">
+                  Let's verify your account
+                </h3>
+                <p className="text-sm text-gray-600 mb-4">
+                  We will send you a confirmation code by sms on the next step.
+                </p>
+
+                <label
+                  className={`block text-sm font-medium mb-2 ${
+                    errors.mobileNumber && touchedFields.mobileNumber
+                      ? "text-red-500"
+                      : ""
+                  }`}
+                >
+                  Mobile Phone Number
+                  <span className="text-red-500">*</span>
+                </label>
+                <div
+                  className={`flex border rounded-md overflow-hidden focus-within:border-[#004896] focus-within:border-3 w-full md:w-[440px] h-[48px] ${
+                    errors.mobileNumber && touchedFields.mobileNumber
+                      ? "border-red-500"
+                      : "border-gray-300"
+                  }`}
+                >
+                  <div className="flex-none w-14 bg-gray-100 border-r border-gray-300 flex items-center justify-center">
+                    <span className="text-sm font-medium">+91</span>
+                  </div>
+                  <input
+                    className="flex-1 px-4 outline-none h-full"
+                    type="text"
+                    inputMode="numeric"
+                    {...register("mobileNumber")}
+                    onChange={(e) => handleNumericInput(e, "mobileNumber")}
+                    placeholder={
+                      errors.mobileNumber && touchedFields.mobileNumber
+                        ? errors.mobileNumber.message
+                        : "Enter 10-digit mobile number"
+                    }
+                  />
+                </div>
+                {errors.mobileNumber && touchedFields.mobileNumber && (
+                  <p className="text-xs text-red-500 mt-2">
+                    {errors.mobileNumber.message}
+                  </p>
+                )}
+              </div>
+            </section>
+
+            <section className="p-6">
+              <button
+                type="submit"
+                disabled={!isFormValid}
+                className={`py-2 px-6 rounded-md ${
+                  isFormValid
+                    ? "bg-blue-600 text-white cursor-pointer"
+                    : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                }`}
+              >
+                Post now
+              </button>
+              {!isFormValid && (
+                <p className="text-xs text-red-500 mt-2">
+                  Please fill in all required fields marked with * and fix any
+                  errors before submitting.
+                </p>
+              )}
+            </section>
           </div>
         </form>
-      </div>
+      </main>
     </div>
   );
 }
